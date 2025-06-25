@@ -1,7 +1,6 @@
 import { JsonPipe } from '@angular/common';
 import { JsonpInterceptor } from '@angular/common/http';
 import { Component, input } from '@angular/core';
-import { setThrowInvalidWriteToSignalError } from '@angular/core/primitives/signals';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 

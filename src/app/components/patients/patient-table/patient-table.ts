@@ -4,16 +4,9 @@ import { MatSort } from '@angular/material/sort';
 import { Patient } from '/Users/aakarsh.batra/Assignment/Week2/HealthcareUi/src/app/models/patient.model';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
+import { FormsModule } from '@angular/forms';
 
-
-const PATIENT_DATA: Patient[] = [
-  {
-    patientID: 1, userID: 1, firstName: 'John', lastName: 'Doe',
-    dateOfBirth: '1990-05-15', gender: 'Male', contactNumber: '555-1234',
-    address: '123 Main St', medicalHistory: 'Hypertension',
-    allergies: 'Penicillin', currentMedications: 'Lisinopril 10mg'
-  },
-];
+const patientData: Patient[] = []
 
 @Component({
   selector: 'app-patient-table',
@@ -26,7 +19,7 @@ export class PatientTableComponent implements OnInit, AfterViewInit {
     'patientID', 'userID', 'firstName', 'lastName', 'dateOfBirth', 'gender',
     'contactNumber', 'address', 'medicalHistory', 'allergies', 'currentMedications'
   ];
-  dataSource = new MatTableDataSource(PATIENT_DATA);
+  dataSource = new MatTableDataSource(patientData);
 
   @ViewChild(MatSort) sort!: MatSort;
 
