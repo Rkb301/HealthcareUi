@@ -9,5 +9,5 @@ import { Login } from "./components/login/login";
   styleUrl: './app.scss'
 })
 export class App {
-  protected title = 'HealthcareUi';
+  protected title = 'Patient Management System';
 }

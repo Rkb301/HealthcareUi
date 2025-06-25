@@ -1,0 +1,17 @@
+<div class="dashboard-cards">
+  <a class="dashboard-card" (click)="navToPatients()">
+    <div class="icon">{{stats[0].icon}}</div>
+    <div class="title">{{stats[0].name}}</div>
+    <div class="desc">{{stats[0].description}}</div>
+  </a>
+  <a class="dashboard-card" (click)="navToDoctors()">
+    <div class="icon">{{stats[1].icon}}</div>
+    <div class="title">{{stats[1].name}}</div>
+    <div class="desc">{{stats[1].description}}</div>
+  </a>
+  <a class="dashboard-card" (click)="navToAppointments()">
+    <div class="icon">{{stats[2].icon}}</div>
+    <div class="title">{{stats[2].name}}</div>
+    <div class="desc">{{stats[2].description}}</div>
+  </a>
+</div>

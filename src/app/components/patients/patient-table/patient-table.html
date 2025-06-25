@@ -1,0 +1,51 @@
+<div class="mat-elevation-z8">
+  <table mat-table [class.dataSource]="dataSource" matSort>
+    <ng-container matColumnDef="patientID">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient ID</th>
+      <td mat-cell *matCellDef="let p">{{p.patientID}}</td>
+    </ng-container>
+    <ng-container matColumnDef="userID">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>User ID</th>
+      <td mat-cell *matCellDef="let p">{{p.userID}}</td>
+    </ng-container>
+    <ng-container matColumnDef="firstName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
+      <td mat-cell *matCellDef="let p">{{p.firstName}}</td>
+    </ng-container>
+    <ng-container matColumnDef="lastName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</th>
+      <td mat-cell *matCellDef="let p">{{p.lastName}}</td>
+    </ng-container>
+    <ng-container matColumnDef="dateOfBirth">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>DOB</th>
+      <td mat-cell *matCellDef="let p">{{p.dateOfBirth}}</td>
+    </ng-container>
+    <ng-container matColumnDef="gender">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Gender</th>
+      <td mat-cell *matCellDef="let p">{{p.gender}}</td>
+    </ng-container>
+    <ng-container matColumnDef="contactNumber">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Contact #</th>
+      <td mat-cell *matCellDef="let p">{{p.contactNumber}}</td>
+    </ng-container>
+    <ng-container matColumnDef="address">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Address</th>
+      <td mat-cell *matCellDef="let p">{{p.address}}</td>
+    </ng-container>
+    <ng-container matColumnDef="medicalHistory">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Medical History</th>
+      <td mat-cell *matCellDef="let p">{{p.medicalHistory}}</td>
+    </ng-container>
+    <ng-container matColumnDef="allergies">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Allergies</th>
+      <td mat-cell *matCellDef="let p">{{p.allergies}}</td>
+    </ng-container>
+    <ng-container matColumnDef="currentMedications">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Current Medications</th>
+      <td mat-cell *matCellDef="let p">{{p.currentMedications}}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
