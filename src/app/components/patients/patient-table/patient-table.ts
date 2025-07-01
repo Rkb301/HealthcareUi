@@ -42,7 +42,6 @@ export class PatientTable implements AfterViewInit {
       ajaxFiltering: true,
       ajaxURL: 'http://localhost:5122/api/patient/search',
       ajaxRequestFunc: async (_url, _config, params) => {
-        // Build query string
         const qp = new URLSearchParams();
         qp.set('pageNumber', params.page.toString());
         qp.set('pageSize', params.size.toString());
@@ -61,22 +60,35 @@ export class PatientTable implements AfterViewInit {
           total_records: resJson.totalCount
         };
       },
-      columns: [
-        { title: 'Patient ID', field: 'patientID', width: 100 },
-        { title: 'Name',       field: 'firstName' },
-        { title: 'DOB',        field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
-            inputFormat: 'yyyy-MM-dd',
-            outputFormat: 'MM/dd/yyyy'
-          }
-        },
-        { title: 'Gender',     field: 'gender' },
-        { title: 'Contact',    field: 'contactNumber' },
-        { title: 'Address',    field: 'address' },
-        { title: 'History',    field: 'medicalHistory', formatter: 'textarea' },
-        { title: 'Allergies',  field: 'allergies' },
-        { title: 'Medications',field: 'currentMedications', formatter: 'textarea' },
-        { title: 'Active',     field: 'isactive', formatter: 'tickCross' },
-      ],
+      autoColumns: true,
+      // columns: [
+      //   { title: 'Patient ID', field: 'patientID', width: 100 },
+      //   { title: 'Name',       field: 'firstName' },
+      //   { title: 'DOB',        field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
+      //       inputFormat: 'yyyy-MM-dd',
+      //       outputFormat: 'dd/MM/yyyy'
+      //     }
+      //   },
+      //   { title: 'Gender',     field: 'gender' },
+      //   { title: 'Contact',    field: 'contactNumber' },
+      //   { title: 'Address',    field: 'address' },
+      //   { title: 'History',    field: 'medicalHistory', formatter: 'textarea' },
+      //   { title: 'Allergies',  field: 'allergies' },
+      //   { title: 'Medications', field: 'currentMedications', formatter: 'textarea' },
+      //   {
+      //     title: 'Created On', field: 'createdAt', formatter: 'datetime', formatterParams: {
+      //       inputFormat: 'yyy-MM-dd',
+      //       outputFormat: 'dd/MM/yyy'
+      //     }
+      //   },
+      //   {
+      //     title: 'Modified On', field: 'modifiedAt', formatter: 'datetime', formatterParams: {
+      //       inputFormat: 'yyy-MM-dd',
+      //       outputFormat: 'dd/MM/yyy'
+      //     }
+      //   },
+      //   { title: 'Active',     field: 'isactive', formatter: 'tickCross' },
+      // ],
     });
   }
 }
