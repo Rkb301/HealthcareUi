@@ -36,7 +36,8 @@
               "@angular/material/prebuilt-themes/azure-blue.css",
               "node_modules/tabulator-tables/dist/css/tabulator.min.css",
               "src/styles.scss"
-            ]
+            ],
+            "scripts": ["node_modules/luxon/build/global/luxon.min.js"]
           },
           "configurations": {
             "production": {

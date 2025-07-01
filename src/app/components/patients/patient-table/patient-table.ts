@@ -32,18 +32,12 @@ export class PatientTable implements AfterViewInit {
   pageSize = 10;
   constructor ( private loginService: LoginService ) {}
   ngAfterViewInit() {
-    // Initialize Tabulator with remote pagination & sorting handlers
     this.tabulator = new Tabulator(this.container.nativeElement, {
       layout: 'fitData',
       reactiveData: true,
       pagination: true,
       paginationMode: "remote",
       paginationSize: this.pageSize,
-      // dataReceiveParams: {
-      //   last_page: 'totalPages',
-      //   total_records: 'totalCount',
-      //   data: 'data'
-      // },
       ajaxSorting: true,
       ajaxFiltering: true,
       ajaxURL: 'http://localhost:5122/api/patient/search',
@@ -62,8 +56,8 @@ export class PatientTable implements AfterViewInit {
         });
         const resJson = await response.json();
         return {
-          data:      resJson.data,         // **must** match your JSON’s "data" key
-          last_page: resJson.totalPages,   // **must** match your JSON’s "totalPages" key
+          data:      resJson.data,
+          last_page: resJson.totalPages,
           total_records: resJson.totalCount
         };
       },
