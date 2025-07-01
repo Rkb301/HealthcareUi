@@ -1,7 +1,7 @@
-import { LoginService } from './../../../services/login.service';
-import { Component, OnInit, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
+import { DateTime } from 'luxon';
+import { LoginService } from '../../../services/login.service';
 
 export interface Patient {
   patientID: number;
@@ -20,90 +20,69 @@ export interface Patient {
   isactive: boolean;
 }
 
-declare global {
-  interface Window {
-    luxon: any;
-  }
-}
-
 @Component({
   selector: 'app-patient-table',
   standalone: true,
-  imports: [CommonModule],
   templateUrl: './patient-table.html',
-  styleUrls: ['./patient-table.scss']
+  styleUrls: ['./patient-table.scss'],
 })
-export class PatientTable implements OnInit, AfterViewInit {
-  @ViewChild('patientTableContainer') patientTableContainer!: ElementRef;
-
-  tabulator: Tabulator | null = null;
-  paramsObj = {};
-  searchParams = new URLSearchParams(this.paramsObj);
-
-  constructor(private loginService: LoginService) {}
-
-  ngOnInit() {
-    // Don't call fetchData here, wait for ngAfterViewInit
-  }
-
+export class PatientTable implements AfterViewInit {
+  @ViewChild('patientTableContainer', { static: true }) container!: ElementRef;
+  tabulator!: Tabulator;
+  pageSize = 10;
+  constructor ( private loginService: LoginService ) {}
   ngAfterViewInit() {
-    this.fetchData();
-  }
-
-  async fetchData() {
-    try {
-      console.log(`Bearer ${this.loginService.getToken()}`);
-      const response = await fetch(`http://localhost:5122/api/patient?${this.searchParams}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${this.loginService.getToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      this.initTabulator(data);
-
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }
-
-  private initTabulator(data: Patient[]) {
-    // Destroy existing instance if it exists
-    if (this.tabulator) {
-      this.tabulator.destroy();
-    }
-
-    this.tabulator = new Tabulator(this.patientTableContainer.nativeElement, {
-      data: data,
+    // Initialize Tabulator with remote pagination & sorting handlers
+    this.tabulator = new Tabulator(this.container.nativeElement, {
       layout: 'fitData',
       reactiveData: true,
+      pagination: true,
+      paginationMode: "remote",
+      paginationSize: this.pageSize,
+      // dataReceiveParams: {
+      //   last_page: 'totalPages',
+      //   total_records: 'totalCount',
+      //   data: 'data'
+      // },
+      ajaxSorting: true,
+      ajaxFiltering: true,
+      ajaxURL: 'http://localhost:5122/api/patient/search',
+      ajaxRequestFunc: async (_url, _config, params) => {
+        // Build query string
+        const qp = new URLSearchParams();
+        qp.set('pageNumber', params.page.toString());
+        qp.set('pageSize', params.size.toString());
+        if (params.sorters?.length) {
+          qp.set('Sort', params.sorters[0].field);
+          qp.set('Order', params.sorters[0].dir);
+        }
+
+        const response = await fetch(`${_url}?${qp}`, {
+          headers: { Authorization: `Bearer ${this.loginService.getToken()}` }
+        });
+        const resJson = await response.json();
+        return {
+          data:      resJson.data,         // **must** match your JSON’s "data" key
+          last_page: resJson.totalPages,   // **must** match your JSON’s "totalPages" key
+          total_records: resJson.totalCount
+        };
+      },
       columns: [
         { title: 'Patient ID', field: 'patientID', width: 100 },
-        { title: 'User ID', field: 'userID', width: 100 },
-        { title: 'First Name', field: 'firstName' },
-        { title: 'Last Name', field: 'lastName' },
-        {
-          title: 'Date of Birth',
-          field: 'dateOfBirth',
-          formatter: 'datetime',
-          formatterParams: {
+        { title: 'Name',       field: 'firstName' },
+        { title: 'DOB',        field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
             inputFormat: 'yyyy-MM-dd',
             outputFormat: 'MM/dd/yyyy'
           }
         },
-        { title: 'Gender', field: 'gender' },
-        { title: 'Contact', field: 'contactNumber' },
-        { title: 'Address', field: 'address' },
-        { title: 'Medical History', field: 'medicalHistory', formatter: 'textarea' },
-        { title: 'Allergies', field: 'allergies' },
-        { title: 'Medications', field: 'currentMedications', formatter: 'textarea' },
-        { title: 'Active', field: 'isactive', formatter: 'tickCross' }
-      ]
+        { title: 'Gender',     field: 'gender' },
+        { title: 'Contact',    field: 'contactNumber' },
+        { title: 'Address',    field: 'address' },
+        { title: 'History',    field: 'medicalHistory', formatter: 'textarea' },
+        { title: 'Allergies',  field: 'allergies' },
+        { title: 'Medications',field: 'currentMedications', formatter: 'textarea' },
+        { title: 'Active',     field: 'isactive', formatter: 'tickCross' },
+      ],
     });
   }
 }
