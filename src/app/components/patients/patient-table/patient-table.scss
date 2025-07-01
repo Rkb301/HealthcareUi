@@ -76,3 +76,15 @@
     }
   }
 }
+
+
+/* patient-table.scss */
+.mat-column-medicalHistory,
+.mat-column-allergies {
+  max-width: 200px;
+  .truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

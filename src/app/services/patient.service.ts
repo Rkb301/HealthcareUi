@@ -22,7 +22,7 @@ export interface Patient {
   currentMedications: string;
   createdAt: string;
   modifiedAt: string;
-  isActive: boolean;
+  isactive: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,5 +1,6 @@
 import { Component, Inject, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,6 +9,7 @@ import { Router } from '@angular/router';
   styleUrl: './dashboard.scss'
 })
 export class Dashboard {
+  constructor (private loginService: LoginService) {}
   stats = [
     {
       name: 'Patients',
@@ -32,7 +34,7 @@ export class Dashboard {
   private router = inject(Router);
 
   navToPatients() {
-    this.router.navigate(['/patients'])
+    this.router.navigateByUrl('/patients')
   }
 
   navToDoctors() {

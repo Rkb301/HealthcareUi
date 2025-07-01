@@ -13,6 +13,14 @@
 			<input [(ngModel)]="name" type="text" name="name" placeholder="Name" />
 			<input [(ngModel)]="email" type="email" name="email" placeholder="Email" />
 			<input [(ngModel)]="password" type="password" name="password" placeholder="Password" />
+      <mat-form-field class="mat-select">
+        <mat-label>Role</mat-label>
+        <mat-select [(value)]="role">
+          <mat-option value="Patient">Patient</mat-option>
+          <mat-option value="Doctor">Doctor</mat-option>
+          <mat-option value="Admin">Admin</mat-option>
+        </mat-select>
+      </mat-form-field>
 			<button (click)="activateSignUp()">Sign Up</button>
 		</form>
 	</div>
