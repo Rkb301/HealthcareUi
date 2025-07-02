@@ -8,3 +8,13 @@
     height: 500px;
   }
 }
+:host {
+  display: block;
+  margin: 1rem;
+}
+
+.tabulator {
+  font-family: Roboto, sans-serif;
+  border: none;
+}
+

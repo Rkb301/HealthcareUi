@@ -1,3 +1,6 @@
+
+<input #filterInput (keyup)="tabulator.setFilter('name', 'like', filterInput.value)" placeholder="Search by name" />
+
 <div class="patient-table mat-elevation-z8">
   <div #patientTableContainer id="patient-table"></div>
 </div>
