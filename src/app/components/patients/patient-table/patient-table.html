@@ -1,5 +1,14 @@
 
-<input #filterInput (keyup)="tabulator.setFilter('name', 'like', filterInput.value)" placeholder="Search by name" />
+<div class="patient-table-container mat-elevation-z8">
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search Patients</mat-label>
+      <input matInput #filterInput placeholder="Type a name…">
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="tabulator.clearFilter(false)">Clear</button>
+  </div>
+  <div #patientTableContainer id="patient-table"></div>
+</div>
 
 <div class="patient-table mat-elevation-z8">
   <div #patientTableContainer id="patient-table"></div>

@@ -1,11 +1,14 @@
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { DateTime } from 'luxon';
 import { LoginService } from '../../../services/login.service';
+import { MatLabel } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
 
 export interface Patient {
-  patientID: number;
-  userID: number;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
@@ -15,22 +18,32 @@ export interface Patient {
   medicalHistory: string;
   allergies: string;
   currentMedications: string;
-  createdAt: string;
-  modifiedAt: string;
-  isactive: boolean;
 }
 
 @Component({
   selector: 'app-patient-table',
   standalone: true,
+  imports: [
+    CommonModule,
+    MatLabel,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule
+  ],
   templateUrl: './patient-table.html',
   styleUrls: ['./patient-table.scss'],
 })
 export class PatientTable implements AfterViewInit {
   @ViewChild('patientTableContainer', { static: true }) container!: ElementRef;
-  tabulator!: Tabulator;
+
+  public tabulator!: Tabulator;
+
+  @ViewChild('filterInput', {static: true}) filterInput!: ElementRef<HTMLInputElement>;
+
   pageSize = 10;
-  constructor ( private loginService: LoginService ) {}
+
+  constructor(private loginService: LoginService) { }
+
   ngAfterViewInit() {
     this.tabulator = new Tabulator(this.container.nativeElement, {
       layout: 'fitDataTable',
@@ -74,6 +87,11 @@ export class PatientTable implements AfterViewInit {
         { title: 'Allergies',  field: 'allergies' },
         { title: 'Medications', field: 'currentMedications', formatter: 'textarea' },
       ],
+    });
+
+    this.filterInput.nativeElement.addEventListener('keyup', () => {
+      const query = this.filterInput.nativeElement.value;
+      this.tabulator.setFilter('firstName', 'like', query);
     });
   }
 }
