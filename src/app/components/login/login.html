@@ -1,84 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-<div [class.right-panel-active]="rightPanelActive" class="container" id="container">
-	<div class="form-container sign-up-container">
-    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+<div class="container" [class.right-panel-active]="rightPanelActive">
+  <!-- Sign Up Panel -->
+  <div class="form-container sign-up-container">
+    <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
       <h1>Create Account</h1>
 
-      <input type="text" id="name" name="name" formControlName="signUpName" placeholder="Name">
-      <!-- @if (name.invalid && (name.dirty || name.touched)) {} -->
-      <!-- <div *ngif="name.invalid && (name.dirty || name.touched)" class="invalid-label">
-        <div *ngif="name.errors?.['required']">Name is required</div>
-      </div> -->
+      <input
+        type="text"
+        placeholder="Name"
+        formControlName="signUpName"
+      />
+      <div class="error" *ngIf="signUpForm.get('signUpName')?.invalid && signUpForm.get('signUpName')?.touched">
+        Name is required.
+      </div>
 
-      <input [(ngModel)]="email" type="email" name="email" >
-      <!-- <div></div> -->
+      <input
+        type="email"
+        placeholder="Email"
+        formControlName="signUpEmail"
+      />
+      <div class="error" *ngIf="signUpForm.get('signUpEmail')?.errors?.['required'] && signUpForm.get('signUpEmail')?.touched">
+        Email is required.
+      </div>
+      <div class="error" *ngIf="signUpForm.get('signUpEmail')?.errors?.['email'] && signUpForm.get('signUpEmail')?.touched">
+        Enter a valid email.
+      </div>
 
-      <input type="passowrd">
+      <input
+        type="password"
+        placeholder="Password"
+        formControlName="signUpPassword"
+      />
+      <div class="error" *ngIf="signUpForm.get('signUpPassword')?.errors?.['required'] && signUpForm.get('signUpPassword')?.touched">
+        Password is required.
+      </div>
+      <div class="error" *ngIf="signUpForm.get('signUpPassword')?.errors?.['minlength'] && signUpForm.get('signUpPassword')?.touched">
+        Minimum 6 characters.
+      </div>
+        <!-- Use the outer <form> only -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Role</mat-label>
+          <mat-select formControlName="signUpRole">
+            <mat-option value="Patient">Patient</mat-option>
+            <mat-option value="Doctor">Doctor</mat-option>
+            <mat-option value="Admin">Admin</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <mat-form-field class="mat-select">
-        <mat-label>Role</mat-label>
-        <mat-select [(value)]="role">
-          <mat-option value="Patient">Patient</mat-option>
-          <mat-option value="Doctor">Doctor</mat-option>
-          <mat-option value="Admin">Admin</mat-option>
-        </mat-select>
-      </mat-form-field>
+        <button mat-raised-button color="primary" type="submit">Sign Up</button>
 
-      <button [disabled]="!signUpForm.valid" (click)="activateSignUp()">Sign Up</button>
+      <p class="switch" (click)="showSignIn()">Already have an account? Sign In</p>
     </form>
-		<!-- <form action="#">
-			<h1>Create Account</h1>
-			<input [(ngModel)]="name" type="text" name="name" placeholder="Name" />
-			<input [(ngModel)]="email" type="email" name="email" ngModel email placeholder="Email" />
-			<input [(ngModel)]="password" type="password" name="password" placeholder="Password" />
-      <mat-form-field class="mat-select">
-        <mat-label>Role</mat-label>
-        <mat-select [(value)]="role">
-          <mat-option value="Patient">Patient</mat-option>
-          <mat-option value="Doctor">Doctor</mat-option>
-          <mat-option value="Admin">Admin</mat-option>
-        </mat-select>
-      </mat-form-field>
-			<button (click)="activateSignUp()">Sign Up</button>
-		</form> -->
-	</div>
-	<div class="form-container sign-in-container">
-		<form onsubmit="return false">
-			<h1>Sign in</h1>
-			<input [(ngModel)]="email" type="email" name="email" placeholder="Email"/>
-			<input [(ngModel)]="password" type="password" name="password" placeholder="Password"/>
-			<a href="#">Forgot your password? (does nothing)</a>
-			<button (click)="activateSignIn()">Sign In</button>
-		</form>
-	</div>
-	<div class="overlay-container">
-		<div class="overlay">
-			<div class="overlay-panel overlay-left">
-				<h1>Welcome Back!</h1>
-				<p>To keep connected with us please login with your personal info</p>
-				<button (click)="showSignIn()" class="ghost" id="signIn">Sign In</button>
-			</div>
-			<div class="overlay-panel overlay-right">
-				<h1>Hello, Friend!</h1>
-				<p>Enter your personal details and start journey with us</p>
-				<button (click)="showSignUp()" class="ghost" id="signUp">Sign Up</button>
-			</div>
-		</div>
-	</div>
-</div>
-<footer>
-	<p>
-		Created by
-		<a target="_blank" href="https://www.youtube.com/@thepowerhex01">ThePowerHex</a>
-	</p>
-</footer>
+  </div>
 
-</body>
-</html>
+  <!-- Sign In Panel -->
+  <div class="form-container sign-in-container">
+    <form [formGroup]="signInForm" (ngSubmit)="onSignIn()">
+      <h1>Sign in</h1>
+
+      <input
+        type="email"
+        placeholder="Email"
+        formControlName="loginEmail"
+      />
+      <div class="error" *ngIf="signInForm.get('loginEmail')?.errors?.['required'] && signInForm.get('loginEmail')?.touched">
+        Email is required.
+      </div>
+      <div class="error" *ngIf="signInForm.get('loginEmail')?.errors?.['email'] && signInForm.get('loginEmail')?.touched">
+        Enter a valid email.
+      </div>
+
+      <input
+        type="password"
+        placeholder="Password"
+        formControlName="loginPassword"
+      />
+      <div class="error" *ngIf="signInForm.get('loginPassword')?.errors?.['required'] && signInForm.get('loginPassword')?.touched">
+        Password is required.
+      </div>
+      <div class="error" *ngIf="signInForm.get('loginPassword')?.errors?.['minlength'] && signInForm.get('loginPassword')?.touched">
+        Minimum 6 characters.
+      </div>
+
+      <button type="submit">Sign In</button>
+      <p class="switch" (click)="showSignUp()">New here? Create Account</p>
+    </form>
+  </div>
+
+  <!-- Overlay Panels -->
+  <div class="overlay-container">
+    <div class="overlay">
+      <div class="overlay-panel overlay-left">
+        <h1>Welcome Back!</h1>
+        <p>To keep connected with us please login with your personal info</p>
+        <button class="ghost" (click)="showSignIn()">Sign In</button>
+      </div>
+      <div class="overlay-panel overlay-right">
+        <h1>Hello, Friend!</h1>
+        <p>Enter your personal details and start your journey</p>
+        <button class="ghost" (click)="showSignUp()">Sign Up</button>
+      </div>
+    </div>
+  </div>
+</div>

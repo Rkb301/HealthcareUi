@@ -1,78 +1,58 @@
-import { Injectable } from "@angular/core";
-import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
-import Swal from "sweetalert2";
+import { Injectable } from '@angular/core';
+import Swal from 'sweetalert2';
 
 export interface LoginResponse {
   accessToken: string;
   expiryTime: string;
 }
 
-export interface User {
-  username: string;
-  email: string;
-  password: string;
-  role: "Admin"; // ALL ADMIN FOR NOW
-}
-
 @Injectable({ providedIn: 'root' })
 export class LoginService {
-  private router: Router = new Router;
-  url = "http://localhost:5122/api/auth/"
-  token = ""
+  private url = 'http://localhost:5122/api/auth/';
+  private token = '';
 
-  // to share token to other components for sending requests from their services
-  getToken() {
-    return this.token.slice(16, 397)
-    // console.log(this.token.slice(16, 397))
+  // Retrieve stored token
+  getToken(): string {
+    return this.token;
   }
 
-  signIn(email: string, password: string) {
-    fetch(`${this.url}login`, {
-      method: "POST",
-      body: JSON.stringify({
-        Email: email,
-        Password: password
-      }),
-      headers: { "Content-Type" : "application/json" }
-    })
-    .then((response) => {
-      if (response.status == 200) {
-        response.text().then((text) => {
-          this.token = text;
-          this.navigate("dashboard");
-        })
-      } else if (response.status == 401) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Invalid login details",
-        });
-      }
-    })
-  }
+  // Sign In
+  async signIn(email: string, password: string): Promise<void> {
+    const response = await fetch(`${this.url}login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ Email: email, Password: password })
+    });
 
-  signUp(username: string,
-    email: string,
-    password: string,
-    role: string)
-  {
-    if (!email.includes('@')) {
-
+    if (response.ok) {
+      this.token = await response.text();
+    } else if (response.status === 401) {
+      throw new Error('Invalid login details');
+    } else {
+      throw new Error('Login request failed');
     }
-    fetch(`${this.url}register`, {
-      method: "POST",
-      body: JSON.stringify({
-        username: username,
-        email: email,
-        password: password,
-        role: role
-      }),
-      headers:{ "Content-Type" : "application/json" }
-    })
   }
 
-  navigate(path: string) {
-    this.router.navigate([`/${path}`]);
+  // Sign Up
+  async signUp(
+    username: string,
+    email:    string,
+    password: string,
+    role:     string
+  ): Promise<void> {
+    if (!email.includes('@')) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    const response = await fetch(`${this.url}register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, role })
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || 'Registration failed');
+    }
   }
 }
