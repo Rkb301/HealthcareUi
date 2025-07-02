@@ -33,7 +33,7 @@ export class PatientTable implements AfterViewInit {
   constructor ( private loginService: LoginService ) {}
   ngAfterViewInit() {
     this.tabulator = new Tabulator(this.container.nativeElement, {
-      layout: 'fitData',
+      layout: 'fitDataTable',
       reactiveData: true,
       pagination: true,
       paginationMode: "remote",
@@ -60,35 +60,33 @@ export class PatientTable implements AfterViewInit {
           total_records: resJson.totalCount
         };
       },
-      autoColumns: true,
-      // columns: [
-      //   { title: 'Patient ID', field: 'patientID', width: 100 },
-      //   { title: 'Name',       field: 'firstName' },
-      //   { title: 'DOB',        field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
-      //       inputFormat: 'yyyy-MM-dd',
-      //       outputFormat: 'dd/MM/yyyy'
-      //     }
-      //   },
-      //   { title: 'Gender',     field: 'gender' },
-      //   { title: 'Contact',    field: 'contactNumber' },
-      //   { title: 'Address',    field: 'address' },
-      //   { title: 'History',    field: 'medicalHistory', formatter: 'textarea' },
-      //   { title: 'Allergies',  field: 'allergies' },
-      //   { title: 'Medications', field: 'currentMedications', formatter: 'textarea' },
-      //   {
-      //     title: 'Created On', field: 'createdAt', formatter: 'datetime', formatterParams: {
-      //       inputFormat: 'yyy-MM-dd',
-      //       outputFormat: 'dd/MM/yyy'
-      //     }
-      //   },
-      //   {
-      //     title: 'Modified On', field: 'modifiedAt', formatter: 'datetime', formatterParams: {
-      //       inputFormat: 'yyy-MM-dd',
-      //       outputFormat: 'dd/MM/yyy'
-      //     }
-      //   },
-      //   { title: 'Active',     field: 'isactive', formatter: 'tickCross' },
-      // ],
+      // autoColumns: true,
+      columns: [
+        { title: 'Patient ID', field: 'patientID', width: 100 },
+        { title: 'Name',       field: 'firstName' },
+        { title: 'DOB',        field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
+            inputFormat: 'yyyy-MM-dd',
+            outputFormat: 'dd/MM/yyyy'
+          }
+        },
+        { title: 'Gender',     field: 'gender' },
+        { title: 'Contact',    field: 'contactNumber' },
+        { title: 'Address',    field: 'address' },
+        { title: 'History',    field: 'medicalHistory', formatter: 'textarea' },
+        { title: 'Allergies',  field: 'allergies' },
+        { title: 'Medications', field: 'currentMedications', formatter: 'textarea' },
+        {title: 'Created On', field: 'createdAt', formatter: 'datetime', formatterParams: {
+            inputFormat: 'yyy-MM-dd',
+            outputFormat: 'dd/MM/yyy'
+          }
+        },
+        {title: 'Modified On', field: 'modifiedAt', formatter: 'datetime', formatterParams: {
+            inputFormat: `${DateTime.DATETIME_FULL_WITH_SECONDS}`,
+            outputFormat: 'dd/MM/yyyy hh:mm:ss'
+          }
+        },
+        { title: 'Active',     field: 'isactive', formatter: 'tickCross' },
+      ],
     });
   }
 }

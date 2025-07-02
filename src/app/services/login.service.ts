@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import Swal from "sweetalert2";
 
@@ -56,6 +57,9 @@ export class LoginService {
     password: string,
     role: string)
   {
+    if (!email.includes('@')) {
+
+    }
     fetch(`${this.url}register`, {
       method: "POST",
       body: JSON.stringify({

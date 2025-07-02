@@ -8,10 +8,35 @@
 <body>
 <div [class.right-panel-active]="rightPanelActive" class="container" id="container">
 	<div class="form-container sign-up-container">
-		<form action="#">
+    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+      <h1>Create Account</h1>
+
+      <input type="text" id="name" name="name" formControlName="signUpName" placeholder="Name">
+      <!-- @if (name.invalid && (name.dirty || name.touched)) {} -->
+      <!-- <div *ngif="name.invalid && (name.dirty || name.touched)" class="invalid-label">
+        <div *ngif="name.errors?.['required']">Name is required</div>
+      </div> -->
+
+      <input [(ngModel)]="email" type="email" name="email" >
+      <!-- <div></div> -->
+
+      <input type="passowrd">
+
+      <mat-form-field class="mat-select">
+        <mat-label>Role</mat-label>
+        <mat-select [(value)]="role">
+          <mat-option value="Patient">Patient</mat-option>
+          <mat-option value="Doctor">Doctor</mat-option>
+          <mat-option value="Admin">Admin</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button [disabled]="!signUpForm.valid" (click)="activateSignUp()">Sign Up</button>
+    </form>
+		<!-- <form action="#">
 			<h1>Create Account</h1>
 			<input [(ngModel)]="name" type="text" name="name" placeholder="Name" />
-			<input [(ngModel)]="email" type="email" name="email" placeholder="Email" />
+			<input [(ngModel)]="email" type="email" name="email" ngModel email placeholder="Email" />
 			<input [(ngModel)]="password" type="password" name="password" placeholder="Password" />
       <mat-form-field class="mat-select">
         <mat-label>Role</mat-label>
@@ -22,7 +47,7 @@
         </mat-select>
       </mat-form-field>
 			<button (click)="activateSignUp()">Sign Up</button>
-		</form>
+		</form> -->
 	</div>
 	<div class="form-container sign-in-container">
 		<form onsubmit="return false">
