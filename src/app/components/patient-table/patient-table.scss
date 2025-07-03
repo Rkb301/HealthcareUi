@@ -1,24 +1,76 @@
-.patient-table-container {
-  margin: 16px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: #fff;
-  padding: 1rem;
-}
+// /* 1. Container: translucent light card to let the gradient breathe through */
+// .patient-table-container,
+// .doctor-table-container,
+// .appointment-table-container {
+//   background: rgba(255, 255, 255, 0.85);     // soften the white
+//   /* Or use a light grey if you prefer: #f4f4f4 */
+//   border-radius: 8px;
+//   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+//   margin: 16px;
+//   padding: 1.5rem;
+//   overflow: hidden;
+// }
 
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
+// /* 2. Header: dark charcoal for contrast (matches sidebar) */
+// #patient-table .tabulator-header,
+// #doctor-table  .tabulator-header,
+// #appointment-table .tabulator-header {
+//   background-color: #2c2c2c;
+//   color: #ffffff;
+//   font-weight: 600;
+//   font-size: 14px;
+// }
 
-.search-field {
-  flex: 1;
-  max-width: 300px;
-}
+// /* 3. Rows: subtle tint using your #FF4B2B accent */
+// #patient-table .tabulator-row:nth-child(even),
+// #doctor-table  .tabulator-row:nth-child(even),
+// #appointment-table .tabulator-row:nth-child(even) {
+//   background-color: rgba(255, 75, 43, 0.08);  // very light orange
+// }
+// #patient-table .tabulator-row:nth-child(odd),
+// #doctor-table  .tabulator-row:nth-child(odd),
+// #appointment-table .tabulator-row:nth-child(odd) {
+//   background-color: rgba(255, 255, 255, 0.75); // translucent white
+// }
+// #patient-table .tabulator-row:hover,
+// #doctor-table  .tabulator-row:hover,
+// #appointment-table .tabulator-row:hover {
+//   background-color: rgba(255, 75, 43, 0.15);  // stronger hover tint
+// }
 
-#patient-table {
-  width: 100%;
-  height: 500px;
-}
+// /* 4. Cells: remove heavy borders, tighten padding */
+// #patient-table .tabulator-cell,
+// #doctor-table  .tabulator-cell,
+// #appointment-table .tabulator-cell {
+//   padding: 0.5rem 0.75rem;
+//   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+//   color: #333333;
+// }
+
+// /* 5. Pagination footer: lighten to blend */
+// #patient-table .tabulator-footer,
+// #doctor-table  .tabulator-footer,
+// #appointment-table .tabulator-footer {
+//   background: rgba(255, 255, 255, 0.9);
+//   border-top: 1px solid rgba(0, 0, 0, 0.1);
+//   color: #333333;
+// }
+
+// /* 6. Page buttons: accent your brand color */
+// #patient-table .tabulator-page,
+// #doctor-table  .tabulator-page,
+// #appointment-table .tabulator-page {
+//   color: #333333;
+//   transition: background-color 0.2s;
+// }
+// #patient-table .tabulator-page:hover,
+// #doctor-table  .tabulator-page:hover,
+// #appointment-table .tabulator-page:hover {
+//   background-color: rgba(255, 75, 43, 0.1);
+// }
+// #patient-table .tabulator-page-active,
+// #doctor-table  .tabulator-page-active,
+// #appointment-table .tabulator-page-active {
+//   background-color: #FF4B2B;  // solid accent to tie into your gradient
+//   color: #ffffff;
+// }

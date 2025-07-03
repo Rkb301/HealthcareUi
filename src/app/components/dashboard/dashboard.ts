@@ -20,7 +20,6 @@ import { AppointmentTable } from '../appointment-table/appointment-table';
     MatIconModule,
     MatListModule,
     MatButtonModule,
-    // RouterOutlet,
     PatientTable,
     DoctorTable,
     AppointmentTable,

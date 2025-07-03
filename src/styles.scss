@@ -9,3 +9,80 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+/* 1. Wrap each table in a translucent card */
+.patient-table-container,
+.doctor-table-container,
+.appointment-table-container {
+  background: rgba(255, 255, 255, 0.85);  /* soft white card */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin: 16px;
+  padding: 0.25rem;
+  overflow: hidden;
+}
+
+/* 2. Darken header row for strong contrast */
+.patient-table-container .tabulator-header,
+.doctor-table-container  .tabulator-header,
+.appointment-table-container .tabulator-header {
+  background-color: #2c2c2c;  /* charcoal */
+  color: #ffffff;             /* white text */
+  font-weight: 520;
+}
+
+/* 3. Improve header text visibility */
+.patient-table-container .tabulator-col-title,
+.doctor-table-container  .tabulator-col-title,
+.appointment-table-container .tabulator-col-title {
+  color: #050505;             /* ensure titles stay white */
+}
+
+/* 4. Tinted row backgrounds to tie into your gradient */
+.patient-table-container .tabulator-row:nth-child(even),
+.doctor-table-container  .tabulator-row:nth-child(even),
+.appointment-table-container .tabulator-row:nth-child(even) {
+  background-color: rgba(255, 75, 43, 0.08);  /* light orange tint */
+}
+.patient-table-container .tabulator-row:nth-child(odd),
+.doctor-table-container  .tabulator-row:nth-child(odd),
+.appointment-table-container .tabulator-row:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 0.75); /* translucent white */
+}
+
+/* 5. Highlight on hover with stronger accent */
+.patient-table-container .tabulator-row:hover,
+.doctor-table-container  .tabulator-row:hover,
+.appointment-table-container .tabulator-row:hover {
+  background-color: rgba(255, 75, 43, 0.2);  /* stronger orange */
+}
+
+/* 6. Style the search bar so it’s visible */
+.patient-table-container .search-bar,
+.doctor-table-container  .search-bar,
+.appointment-table-container .search-bar {
+  background: rgba(44, 44, 44, 0.5);   /* dark translucent backdrop */
+  padding: 0.75rem;
+  border-radius: 6px;
+}
+
+.patient-table-container .search-bar .mat-form-field-infix,
+.doctor-table-container  .search-bar .mat-form-field-infix,
+.appointment-table-container .search-bar .mat-form-field-infix {
+  background: #ffffff;        /* white input */
+  border-radius: 4px;
+}
+
+.patient-table-container .search-bar input,
+.doctor-table-container  .search-bar input,
+.appointment-table-container .search-bar input {
+  color: #333333;             /* dark text for readability */
+}
+
+/* 7. Resize the clear button for balance */
+.patient-table-container .search-bar button,
+.doctor-table-container  .search-bar button,
+.appointment-table-container .search-bar button {
+  min-height: 40px;
+}
