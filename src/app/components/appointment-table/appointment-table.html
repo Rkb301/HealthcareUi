@@ -1,0 +1,13 @@
+<div class="appointment-table-container mat-elevation-z8">
+
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search Appointment Status</mat-label>
+      <input matInput #filterInput placeholder="Check status">
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="clearFilter()">Clear</button>
+  </div>
+
+  <div #appointmentTableContainer id="appointment-table"></div>
+</div>

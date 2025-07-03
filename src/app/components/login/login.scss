@@ -204,7 +204,6 @@ footer {
 footer p {
   margin: 10px 0;
 }
-
 :host {
   display: flex;
   justify-content: center;
@@ -214,11 +213,7 @@ footer p {
   margin: 0;
 }
 
-.full-width {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-.sign-up-card {
+mat-card {
+  width: 350px;
   padding: 2rem;
 }

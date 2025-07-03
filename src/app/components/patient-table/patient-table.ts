@@ -1,4 +1,3 @@
-// src/app/components/patients/patient-table/patient-table.ts
 import {
   Component,
   AfterViewInit,
@@ -9,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule }     from '@angular/material/input';
 import { MatButtonModule }    from '@angular/material/button';
-// Import the full ES module build to satisfy TypeScript typings[31]
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 @Component({
@@ -51,8 +49,8 @@ export class PatientTable implements AfterViewInit {
 
       ajaxURLGenerator: (url, _config, params) => {
         const httpParams = new URLSearchParams();
-        httpParams.set(params.pageName || 'page', params.page);        // fallback if names change
-        httpParams.set(params.sizeName || 'size', params.size);        // fallback
+        httpParams.set(params.pageName || 'pageNumber', params.page);        // fallback if names change
+        httpParams.set(params.sizeName || 'pageSize', params.size);        // fallback
         if (params.sorters?.length) {
           httpParams.set(params.sortFieldName || 'sort',  params.sorters[0].field);
           httpParams.set(params.sortDirName   || 'order', params.sorters[0].dir);

@@ -1,17 +1,71 @@
-<div class="dashboard-cards">
-  <a class="dashboard-card" (click)="navToPatients()">
-    <div class="icon">{{stats[0].icon}}</div>
-    <div class="title">{{stats[0].name}}</div>
-    <div class="desc">{{stats[0].description}}</div>
-  </a>
-  <a class="dashboard-card" (click)="navToDoctors()">
-    <div class="icon">{{stats[1].icon}}</div>
-    <div class="title">{{stats[1].name}}</div>
-    <div class="desc">{{stats[1].description}}</div>
-  </a>
-  <a class="dashboard-card" (click)="navToAppointments()">
-    <div class="icon">{{stats[2].icon}}</div>
-    <div class="title">{{stats[2].name}}</div>
-    <div class="desc">{{stats[2].description}}</div>
-  </a>
+<div class="page-container">
+  <mat-sidenav-container class="dashboard-container">
+    <mat-sidenav class="sidebar" #sidenav mode="side" opened>
+      <mat-nav-list>
+        <a class="nav-item" mat-list-item routerLink="patients" (click)="showPatients()" >
+          <span>Patients</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="doctors" (click)="showDoctors()" >
+          <span>Doctors</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="appointments" (click)="showAppointments()" >
+          <span>Appointments</span>
+        </a>
+      </mat-nav-list>
+      <button>hello</button>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="toolbar">
+        <mat-toolbar color="primary">
+          <button mat-icon-button (click)="sidenav.toggle()">
+            <mat-icon>menu</mat-icon>
+          </button>
+          <span>Dashboard</span>
+        </mat-toolbar>
+      </div>
+      <div class="content-area">
+        <!-- Patients Table condition -->
+        @if (showPatient) {
+          <div class="patient-table-container">
+            <app-patient-table></app-patient-table>
+          </div>
+        }
+
+        <!-- Doctors Table condition -->
+        @if (showDoctor) {
+          <div class="doctor-table-container">
+            <app-doctor-table></app-doctor-table>
+          </div>
+        }
+
+        <!-- Appointments Table condition -->
+        @if (showAppointment) {
+          <div class="appointment-table-container">
+            <app-appointment-table></app-appointment-table>
+          </div>
+        }
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>
+
+
+
+  <!-- <div class="dashboard-cards">
+    <a class="dashboard-card" (click)="navToPatients()">
+      <div class="icon">{{stats[0].icon}}</div>
+      <div class="title">{{stats[0].name}}</div>
+      <div class="desc">{{stats[0].description}}</div>
+    </a>
+    <a class="dashboard-card" (click)="navToDoctors()">
+      <div class="icon">{{stats[1].icon}}</div>
+      <div class="title">{{stats[1].name}}</div>
+      <div class="desc">{{stats[1].description}}</div>
+    </a>
+    <a class="dashboard-card" (click)="navToAppointments()">
+      <div class="icon">{{stats[2].icon}}</div>
+      <div class="title">{{stats[2].name}}</div>
+      <div class="desc">{{stats[2].description}}</div>
+    </a>
+  </div> -->

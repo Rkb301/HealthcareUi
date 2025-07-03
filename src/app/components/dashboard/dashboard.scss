@@ -1,42 +1,73 @@
+div.toolbar {
+  mat-toolbar {
+    background-color: #2c2c2c;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    mat-icon {
+      color: #FFFFFF;
+    }
+
+    span {
+      color: #FFFFFF;
+    }
+  }
+}
+
+div.page-container {
+  background: linear-gradient(to right, #FF4B2B, #FF416C);
+}
+
 .dashboard-container {
-  max-width: 900px;
-  margin: 40px auto;
-  text-align: center;
+  height: 100vh;
+  background: linear-gradient(to right, #FF4B2B, #FF416C);
 }
 
-.dashboard-cards {
+.content-area {
+  padding: 16px;
+  background: linear-gradient(to right, #FF4B2B, #FF416C);
+  overflow-y: auto;
+}
+
+// Sidebar container
+mat-sidenav.sidebar {
+  background-color: #2c2c2c;
+  width: 300px;
   display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 32px;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-right-radius: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  padding-top: 1rem;
 }
 
-.dashboard-card {
-  background: #f4f6fa;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  padding: 32px 24px;
-  width: 200px;
+// Navigation items
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 0;
+  border-radius: 4px;
+  transition: background-color 0.2s;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
-  outline: none;
-}
-.dashboard-card:focus,
-.dashboard-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  transform: translateY(-4px) scale(1.03);
-  background: #e0f7fa;
-}
-.icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-.title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.desc {
-  font-size: 14px;
-  color: #555;
+
+  span {
+    flex: 1;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #ffffff;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &.active {
+    background-color: #ff5722;
+
+    span {
+      color: #ffffff;
+    }
+  }
 }
