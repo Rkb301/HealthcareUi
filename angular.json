@@ -64,6 +64,11 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {
+            "allowedHosts": ["https://10e8ecda1cbb0f.lhr.life"],
+            "host": "0.0.0.0",
+            "port": 4200
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {

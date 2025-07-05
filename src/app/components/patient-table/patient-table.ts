@@ -1,3 +1,4 @@
+// src/app/components/patients/patient-table/patient-table.ts
 import {
   Component,
   AfterViewInit,
@@ -30,7 +31,7 @@ export class PatientTable implements AfterViewInit {
 
   ngAfterViewInit() {
     this.tabulator = new Tabulator(this.tableContainer.nativeElement, {
-      ajaxURL: 'http://localhost:5122/api/patient/search',
+      ajaxURL: 'http://localhost:5122/api/patient/search-lucene',
       ajaxConfig: 'GET',
 
       pagination: true,
@@ -41,46 +42,47 @@ export class PatientTable implements AfterViewInit {
       ajaxSorting: true,
 
       dataReceiveParams: {
+        data:      'data',
         last_page: 'totalCount',
-        data: 'data',
-        'sort[0][field]': 'sort',
-        'sort[0][dir]':   'order'
       },
 
       ajaxURLGenerator: (url, _config, params) => {
-        const httpParams = new URLSearchParams();
-        httpParams.set(params.pageName || 'pageNumber', params.page);        // fallback if names change
-        httpParams.set(params.sizeName || 'pageSize', params.size);        // fallback
+        const p = new URLSearchParams();
+
+        p.set('pageNumber', String(params.page));
+        p.set('pageSize',   String(params.size));
+
         if (params.sorters?.length) {
-          httpParams.set(params.sortFieldName || 'sort',  params.sorters[0].field);
-          httpParams.set(params.sortDirName   || 'order', params.sorters[0].dir);
+          p.set('sort',  params.sorters[0].field);
+          p.set('order', params.sorters[0].dir);
         }
-        const query = this.filterInput.nativeElement.value;
-        if (query) {
-          httpParams.set('FirstName', query);
+
+        const q = this.filterInput.nativeElement.value.trim();
+        if (q) {
+          p.set('query', q);
         }
-        return `${url}?${httpParams.toString()}`;
+
+        return `${url}?${p.toString()}`;
       },
 
       columns: [
-        { title: 'First Name', field: 'firstName', },
-        { title: 'Last Name',  field: 'lastName', },
-        {
-          title: 'Date Of Birth', field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
-            inputFormat: 'yyyy-MM-dd',
-            outputFormat: 'dd/MM/yyyy'
-          },
+        { title: 'First Name',       field: 'firstName'      },
+        { title: 'Last Name',        field: 'lastName'       },
+        { title: 'Date Of Birth',    field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
+            inputFormat:  'yyyy-MM-dd',
+            outputFormat: 'MM/dd/yyyy'
+          }
         },
-        { title: 'Gender',     field: 'gender' },
-        { title: 'Phone',      field: 'contactNumber' },
-        { title: 'Address', field: 'address' },
-        { title: 'History', field: 'medicalHistory', formatter: 'textarea' },
-        { title: 'Allergies',  field: 'allergies' },
-        { title: 'Medications', field: 'currentMedications', formatter: 'textarea' },
+        { title: 'Gender',           field: 'gender'         },
+        { title: 'Phone',            field: 'contactNumber'  },
+        { title: 'Address',          field: 'address'        },
+        { title: 'History',          field: 'medicalHistory', formatter: 'textarea' },
+        { title: 'Allergies',        field: 'allergies'      },
+        { title: 'Medications',      field: 'currentMedications', formatter: 'textarea' },
       ],
 
       layout: 'fitColumns',
-      height: '500px'
+      height: '500px',
     });
 
     this.filterInput.nativeElement.addEventListener('keyup', () => {

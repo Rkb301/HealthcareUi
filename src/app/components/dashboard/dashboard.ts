@@ -1,5 +1,5 @@
 import { Component, Inject, inject, ViewEncapsulation } from '@angular/core';
-import { Router, RouterModule, RouterOutlet } from '@angular/router';
+import { NavigationStart, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import { MatSidenavModule }   from '@angular/material/sidenav';
 import { MatToolbarModule }   from '@angular/material/toolbar';
@@ -96,6 +96,15 @@ export class Dashboard {
       method: 'POST'
     })
     this.router.navigate(['/login']);
+  }
+
+  ngOnInit() {
+    this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationStart && evt.navigationTrigger === 'popstate') {
+        this.logout();
+        this.router.navigate(['/login']);
+      }
+    })
   }
 
 }

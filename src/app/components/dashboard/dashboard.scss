@@ -71,3 +71,37 @@ mat-sidenav.sidebar {
     }
   }
 }
+
+.logout-btn {
+  width: 90%;
+  margin: 34rem auto 1rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #ff5722;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: none;
+
+  mat-icon {
+    font-size: 22px;
+    color: inherit;
+    transition: color 0.18s;
+  }
+
+  &:hover, &:focus {
+    background: rgba(255,87,34,0.08);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255,87,34,0.12);
+    mat-icon {
+      color: #fff;
+    }
+  }
+}
