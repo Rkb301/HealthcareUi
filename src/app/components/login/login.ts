@@ -30,24 +30,20 @@ import { MatCardModule }      from '@angular/material/card';
   styleUrls: ['./login.scss'],
 })
 export class Login {
-  // Toggle between panels
   rightPanelActive = false;
 
-  // FormBuilder instance
   fb = new FormBuilder();
 
-  // Reactive form for Sign In
   signInForm = this.fb.nonNullable.group({
     loginEmail:    ['', [Validators.required, Validators.email]],
     loginPassword: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  // Reactive form for Sign Up
   signUpForm = this.fb.nonNullable.group({
     signUpName:     ['', Validators.required],
     signUpEmail:    ['', [Validators.required, Validators.email]],
     signUpPassword: ['', [Validators.required, Validators.minLength(6)]],
-    signUpRole:     ['Patient', Validators.required], // default role
+    signUpRole:     ['Patient', Validators.required],
   });
 
   constructor(
@@ -55,7 +51,6 @@ export class Login {
     private router: Router
   ) {}
 
-  // Sign In handler using non-null assertions
   onSignIn() {
     if (this.signInForm.invalid) {
       this.signInForm.markAllAsTouched();
@@ -63,7 +58,7 @@ export class Login {
     }
     const { loginEmail, loginPassword } = this.signInForm.value;
     this.loginService
-      .signIn(loginEmail!, loginPassword!)  // ← non-null assertions
+      .signIn(loginEmail!, loginPassword!)
       .then(() => {
         this.router.navigate(['/dashboard']);
       })
@@ -72,7 +67,6 @@ export class Login {
       });
   }
 
-  // Sign Up handler using non-null assertions
   onSignUp() {
     if (this.signUpForm.invalid) {
       this.signUpForm.markAllAsTouched();

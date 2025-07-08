@@ -10,9 +10,10 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, merge, of } from 'rxjs';
-import { catchError, map, startWith, switchMap } from 'rxjs/operators';
+import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
 import { Patient } from '../../models/patient.model';
 import { MatIconModule } from '@angular/material/icon';
+import Swal from 'sweetalert2';
 
 interface PagedResult<T> {
   data: T[];
@@ -44,7 +45,8 @@ export class PatientTable implements AfterViewInit {
 
   displayedColumns: string[] = [
     'firstName', 'lastName', 'dateOfBirth', 'gender',
-    'contactNumber', 'address', 'medicalHistory', 'allergies', 'currentMedications'
+    'contactNumber', 'address', 'medicalHistory', 'allergies', 'currentMedications',
+    'actions'
   ];
 
   dataSource = new MatTableDataSource<Patient>();
@@ -54,7 +56,7 @@ export class PatientTable implements AfterViewInit {
   isRateLimitReached = false;
 
 
-  private baseUrl = 'http://localhost:5122/api/patient/search-lucene';
+  private baseUrl = 'http://localhost:5122/api/patient';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -104,7 +106,7 @@ export class PatientTable implements AfterViewInit {
       params = params.set('query', query.trim());
     }
 
-    return this.http.get<PagedResult<Patient>>(this.baseUrl, { params });
+    return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params });
   }
 
   applyFilter() {
@@ -148,123 +150,88 @@ export class PatientTable implements AfterViewInit {
       }
     });
   }
+
+  editRow(row: any) {
+    //
+  }
+
+  confirmDelete(row: any) {
+    Swal.fire({
+      title: 'Confirm Deletion',
+      text: 'This will permanently remove the patient record.',
+      icon: 'warning',
+
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.deleteRow(row);
+      }
+    });
+  }
+
+
+
+  deleteRow(row: any) {
+    let params = new HttpParams()
+    .set('pageNumber', (this.paginator.pageIndex + 1).toString())
+    .set('pageSize', this.paginator.pageSize.toString());
+
+    if (this.sort.active && this.sort.direction) {
+      params = params.set('sort', this.sort.active)
+                     .set('order', this.sort.direction);
+    }
+
+    if (this.getFilterValue() != '' || this.filterInput.nativeElement.value != '') {
+      for (const patient of this.dataSource.data) {
+        params = params
+          .set("firstName", patient.firstName)
+          .set("currentMedications", patient.currentMedications)
+          .set("allergies", patient.allergies)
+          .set("medicalHistory", patient.medicalHistory)
+      }
+    }
+    else
+    {
+      var tbd = this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search`, { params })
+      .subscribe({
+        next: data => {
+          const match = data.data.find(p =>
+            p.firstName === row.firstName &&
+            p.currentMedications === row.currentMedications &&
+            p.allergies === row.allergies &&
+            p.medicalHistory === row.medicalHistory
+          );
+
+          if (!match) {
+            Swal.fire("Error", "Patient not found", "error")
+            return;
+          }
+
+          const tbdID = match.userID ?? (match as any).PatientID;
+          if (!tbdID) {
+            Swal.fire("Error", "UserID does not match any known patient", "error")
+            return;
+          }
+
+          this.http.delete(`${this.baseUrl}/${tbdID}`)
+            .subscribe({
+              next: () => {
+                Swal.fire("Success", "Patient deleted successfully", "success")
+                this.loadData()
+              },
+              error: err => {
+                Swal.fire("Error", "Could not delete patient", "error");
+              }
+          })
+        },
+        error: err => {
+          Swal.fire("Error", "Could not find patient", "error");
+        }
+      })
+    }
+  }
 }
 
-
-
-// import { HttpClient } from '@angular/common/http';
-// // src/app/components/patients/patient-table/patient-table.ts
-// import {
-//   Component,
-//   AfterViewInit,
-//   ViewChild,
-//   ElementRef,
-//   inject
-// } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { MatFormFieldModule } from '@angular/material/form-field';
-// import { MatInputModule }     from '@angular/material/input';
-// import { MatButtonModule }    from '@angular/material/button';
-// import { TabulatorFull as Tabulator } from 'tabulator-tables';
-// import { MatTableModule } from '@angular/material/table';
-// import { using, Observable } from 'rxjs';
-// import { Patient } from '../../models/patient.model';
-
-// @Component({
-//   selector: 'app-patient-table',
-//   standalone: true,
-//   imports: [
-//     CommonModule,
-//     MatFormFieldModule,
-//     MatInputModule,
-//     MatButtonModule,
-//     MatTableModule
-//   ],
-//   templateUrl: './patient-table.html',
-//   styleUrl: './patient-table.scss',
-// })
-// export class PatientTable implements AfterViewInit {
-//   constructor (private http: HttpClient) {}
-//   public tabulator!: Tabulator;
-//   url = "http:localhost:5122/api/patient/search-lucene";
-//   matData = [];
-
-
-//   @ViewChild('filterInput',  { static: true }) filterInput!: ElementRef<HTMLInputElement>;
-//   @ViewChild('patientTableContainer', { static: true }) tableContainer!: ElementRef<HTMLDivElement>;
-
-//   ngAfterViewInit() {
-//     this.getData();
-//     this.tabulator = new Tabulator(this.tableContainer.nativeElement, {
-//       ajaxURL: 'http://localhost:5122/api/patient/search-lucene',
-//       ajaxConfig: 'GET',
-
-//       pagination: true,
-//       paginationMode: 'remote',
-//       paginationSize: 10,
-//       paginationSizeSelector: [5, 10, 20, 100],
-//       ajaxFiltering: true,
-//       ajaxSorting: true,
-
-//       dataReceiveParams: {
-//         data:      'data',
-//         last_page: 'totalCount',
-//       },
-
-//       ajaxURLGenerator: (url, _config, params) => {
-//         const p = new URLSearchParams();
-
-//         p.set('pageNumber', String(params.page));
-//         p.set('pageSize',   String(params.size));
-
-//         if (params.sorters?.length) {
-//           p.set('sort',  params.sorters[0].field);
-//           p.set('order', params.sorters[0].dir);
-//         }
-
-//         const q = this.filterInput.nativeElement.value.trim();
-//         if (q) {
-//           p.set('query', q);
-//         }
-
-//         return `${url}?${p.toString()}`;
-//       },
-
-//       columns: [
-//         { title: 'First Name',       field: 'firstName'      },
-//         { title: 'Last Name',        field: 'lastName'       },
-//         { title: 'Date Of Birth',    field: 'dateOfBirth', formatter: 'datetime', formatterParams: {
-//             inputFormat:  'yyyy-MM-dd',
-//             outputFormat: 'MM/dd/yyyy'
-//           }
-//         },
-//         { title: 'Gender',           field: 'gender'         },
-//         { title: 'Phone',            field: 'contactNumber'  },
-//         { title: 'Address',          field: 'address'        },
-//         { title: 'History',          field: 'medicalHistory', formatter: 'textarea' },
-//         { title: 'Allergies',        field: 'allergies'      },
-//         { title: 'Medications',      field: 'currentMedications', formatter: 'textarea' },
-//       ],
-
-//       layout: 'fitColumns',
-//       height: '500px',
-//     });
-
-//     this.filterInput.nativeElement.addEventListener('keyup', () => {
-//       this.tabulator.setPage(1);
-//       this.tabulator.replaceData();
-//     });
-//   }
-
-//   clearFilter(): void {
-//     this.filterInput.nativeElement.value = '';
-//     this.tabulator.setPage(1);
-//     this.tabulator.replaceData();
-//   }
-
-//   getData(): Observable<Patient[]> {
-//     var response = this.http.get<Patient[]>(this.url);
-//     console.log(response);
-//     return response;
-//   }
-// }
