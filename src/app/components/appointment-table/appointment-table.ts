@@ -31,7 +31,7 @@ export class AppointmentTable {
 
   ngAfterViewInit() {
     this.tabulator = new Tabulator(this.tableContainer.nativeElement, {
-      ajaxURL: 'http://localhost:5122/api/appointment/search-with-names',
+      ajaxURL: 'http://localhost:5122/api/appointment/search-lucene',
       ajaxConfig: 'GET',
 
       pagination: true,
@@ -42,30 +42,28 @@ export class AppointmentTable {
       ajaxSorting: true,
 
       dataReceiveParams: {
-        last_page: 'totalCount',
         data: 'data',
-        'sort[0][field]': 'sort',
-        'sort[0][dir]':   'order'
+        last_page: 'totalCount'
       },
 
       ajaxURLGenerator: (url, _config, params) => {
-        const httpParams = new URLSearchParams();
+        const p = new URLSearchParams();
 
-        httpParams.set(params.pageName || 'pageNumber', params.page);        // fallback if names change
-        httpParams.set(params.sizeName || 'pageSize', params.size);        // fallback
+        p.set('pageNumber', String(params.page));
+        p.set('pageSize', String(params.size));
 
         if (params.sorters?.length) {
-          httpParams.set(params.sortFieldName || 'sort',  params.sorters[0].field);
-          httpParams.set(params.sortDirName   || 'order', params.sorters[0].dir);
+          p.set('sort',  params.sorters[0].field);
+          p.set('order', params.sorters[0].dir);
         }
 
         const query = this.filterInput.nativeElement.value;
 
         if (query) {
-          httpParams.set('status', query);
+          p.set('query', query);
         }
 
-        return `${url}?${httpParams.toString()}`;
+        return `${url}?${p.toString()}`;
       },
 
       columns: [

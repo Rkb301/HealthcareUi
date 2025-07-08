@@ -22,7 +22,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
   templateUrl: './doctor-table.html',
   styleUrl: './doctor-table.scss'
 })
-export class DoctorTable {
+export class DoctorTable implements AfterViewInit{
   public tabulator!: Tabulator;
 
   @ViewChild('filterInput',  { static: true }) filterInput!: ElementRef<HTMLInputElement>;
@@ -30,7 +30,7 @@ export class DoctorTable {
 
   ngAfterViewInit() {
     this.tabulator = new Tabulator(this.tableContainer.nativeElement, {
-      ajaxURL: 'http://localhost:5122/api/doctor/search',
+      ajaxURL: 'http://localhost:5122/api/doctor/search-lucene',
       ajaxConfig: 'GET',
 
       pagination: true,
@@ -41,30 +41,28 @@ export class DoctorTable {
       ajaxSorting: true,
 
       dataReceiveParams: {
+        data:      'data',
         last_page: 'totalCount',
-        data: 'data',
-        'sort[0][field]': 'sort',
-        'sort[0][dir]':   'order'
       },
 
       ajaxURLGenerator: (url, _config, params) => {
-        const httpParams = new URLSearchParams();
+        const p = new URLSearchParams();
 
-        httpParams.set(params.pageName || 'pageNumber', params.page);        // fallback if names change
-        httpParams.set(params.sizeName || 'pageSize', params.size);        // fallback
+        p.set('pageNumber', String(params.page));
+        p.set('pageSize', String(params.size));
 
         if (params.sorters?.length) {
-          httpParams.set(params.sortFieldName || 'sort',  params.sorters[0].field);
-          httpParams.set(params.sortDirName   || 'order', params.sorters[0].dir);
+          p.set('sort',  params.sorters[0].field);
+          p.set('order', params.sorters[0].dir);
         }
 
-        const query = this.filterInput.nativeElement.value;
+        const query = this.filterInput.nativeElement.value.trim();
 
         if (query) {
-          httpParams.set('FirstName', query);
+          p.set('query', query);
         }
 
-        return `${url}?${httpParams.toString()}`;
+        return `${url}?${p.toString()}`;
       },
 
       columns: [
@@ -73,6 +71,7 @@ export class DoctorTable {
         { title: 'Specialization', field: 'specialization', },
         { title: 'Phone',      field: 'contactNumber' },
         { title: 'Email', field: 'email' },
+        { title: 'Schedule', field: 'schedule' }
       ],
 
       layout: 'fitColumns',
