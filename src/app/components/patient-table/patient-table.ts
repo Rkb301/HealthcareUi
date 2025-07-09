@@ -207,7 +207,7 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
   private openPatientModal(existing?: Patient): Promise<Patient> {
     const fields = [
-      { key: 'userID', label: 'User ID', type: 'number'},
+      // { key: 'userID', label: 'User ID', type: 'number'},
       { key: 'firstName', label: 'First Name', type: 'text' },
       { key: 'lastName',  label: 'Last Name',  type: 'text' },
       { key: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
@@ -247,14 +247,18 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
           let value: any = el.value;
           if (f.key === 'userID') {
-            value = parseInt(el.value, 10);
+            const num = parseInt(el.value, 10);
             if (isNaN(value)) {
               Swal.showValidationMessage('User ID must be a number');
               return;
             }
+            value = num;
           }
-
-          result[f.key] = el.value;
+          if (f.key === 'userID') {
+            result[f.key] = parseInt(el.value, 10);
+          } else {
+            result[f.key] = el.value;
+          }
         }
 
         return result as Patient;
