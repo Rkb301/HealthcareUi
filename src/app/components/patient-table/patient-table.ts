@@ -172,66 +172,67 @@ export class PatientTable implements AfterViewInit {
     });
   }
 
-
-
-  deleteRow(row: any) {
+  deleteRow(row: Patient) {
     let params = new HttpParams()
-    .set('pageNumber', (this.paginator.pageIndex + 1).toString())
-    .set('pageSize', this.paginator.pageSize.toString());
+      .set('pageNumber', (this.paginator.pageIndex + 1).toString())
+      .set('pageSize',   this.paginator.pageSize.toString());
 
     if (this.sort.active && this.sort.direction) {
-      params = params.set('sort', this.sort.active)
-                     .set('order', this.sort.direction);
+      params = params
+        .set('sort', this.sort.active)
+        .set('order', this.sort.direction);
     }
 
-    if (this.getFilterValue() != '' || this.filterInput.nativeElement.value != '') {
-      for (const patient of this.dataSource.data) {
-        params = params
-          .set("firstName", patient.firstName)
-          .set("currentMedications", patient.currentMedications)
-          .set("allergies", patient.allergies)
-          .set("medicalHistory", patient.medicalHistory)
-      }
-    }
-    else
-    {
-      var tbd = this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search`, { params })
+    params = params
+      .set('firstName',        row.firstName)
+      .set('lastName',         row.lastName)
+      .set('dateOfBirth',      row.dateOfBirth)
+      .set('contactNumber',    row.contactNumber)
+      .set('medicalHistory',   row.medicalHistory)
+      .set('allergies',        row.allergies)
+      .set('currentMedications', row.currentMedications);
+
+    this.http
+      .get<PagedResult<Patient>>(`${this.baseUrl}/search`, { params })
       .subscribe({
-        next: data => {
+        next: (data): void => {
           const match = data.data.find(p =>
-            p.firstName === row.firstName &&
-            p.currentMedications === row.currentMedications &&
-            p.allergies === row.allergies &&
-            p.medicalHistory === row.medicalHistory
+            p.firstName        === row.firstName       &&
+            p.lastName         === row.lastName        &&
+            p.dateOfBirth      === row.dateOfBirth     &&
+            p.contactNumber    === row.contactNumber  &&
+            p.medicalHistory   === row.medicalHistory &&
+            p.allergies        === row.allergies      &&
+            p.currentMedications === row.currentMedications
           );
 
           if (!match) {
-            Swal.fire("Error", "Patient not found", "error")
+            Swal.fire('Error', 'Patient not found for deletion', 'error');
             return;
           }
 
-          const tbdID = match.userID ?? (match as any).PatientID;
-          if (!tbdID) {
-            Swal.fire("Error", "UserID does not match any known patient", "error")
+          const id = match?.patientID ?? (match as any).PatientID;
+          if (!id) {
+            Swal.fire('Error', 'No ID available to delete', 'error');
             return;
           }
 
-          this.http.delete(`${this.baseUrl}/${tbdID}`)
+          this.http.delete(`http://localhost:5122/api/patient/${id}`)
             .subscribe({
               next: () => {
-                Swal.fire("Success", "Patient deleted successfully", "success")
-                this.loadData()
+                Swal.fire('Deleted', 'Patient removed successfully', 'success');
+                this.loadData();
               },
-              error: err => {
-                Swal.fire("Error", "Could not delete patient", "error");
+              error: () => {
+                Swal.fire('Error', 'Deletion failed', 'error')
               }
-          })
+            });
         },
-        error: err => {
-          Swal.fire("Error", "Could not find patient", "error");
+        error: () => {
+          Swal.fire('Error', 'Failed to fetch for delete', 'error')
         }
-      })
-    }
+      });
   }
+
 }
 
