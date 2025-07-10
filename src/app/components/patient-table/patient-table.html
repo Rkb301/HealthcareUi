@@ -28,7 +28,6 @@
 <div class="table-container">
   <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
 
-    <!-- Define columns as before -->
     <ng-container matColumnDef="firstName">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
       <td mat-cell *matCellDef="let patient">{{patient.firstName}}</td>

@@ -1,0 +1,106 @@
+<div class="page-container">
+  <mat-sidenav-container class="dashboard-container">
+    <mat-sidenav class="sidebar" #sidenav mode="side" closed>
+      <mat-nav-list>
+        <a class="nav-item" mat-list-item routerLink="">
+          <span>Undecided</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="">
+          <span>Undecided</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="">
+          <span>Undecided</span>
+        </a>
+      </mat-nav-list>
+
+      <button class="logout-btn" (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="toolbar">
+        <mat-toolbar color="primary">
+          <button mat-icon-button (click)="sidenav.toggle()">
+            <mat-icon>menu</mat-icon>
+          </button>
+          <span>Home Page</span>
+          <mat-icon class="account">account_circle</mat-icon>
+        </mat-toolbar>
+      </div>
+
+      <mat-card class="present-appointments-card">
+        <mat-card-header>Today's Appointments</mat-card-header>
+      </mat-card>
+      <div class="card-grid">
+        <mat-card class="past-appointments-card">
+          <mat-card-header>Past Appointments</mat-card-header>
+          <div class="table-container">
+            <table mat-table [dataSource]="dataSource" mat-sort class="mat-elevation-z8">
+
+              <ng-container matColumnDef="patientName">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient Name</th>
+                <td mat-cell *matCellDef="let patient">{{patient.firstName}} {{patient.lastName}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="appointmentDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                <td mat-cell *matCellDef="let appointment">{{appointment.appointmentDate}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="dateOfBirth">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date of Birth</th>
+                <td mat-cell *matCellDef="let patient">{{patient.dateOfBirth}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="gender">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Gender</th>
+                <td mat-cell *matCellDef="let patient">{{patient.gender}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="contactNumber">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Contact Number</th>
+                <td mat-cell *matCellDef="let patient">{{patient.contactNumber}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="address">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Address</th>
+                <td mat-cell *matCellDef="let patient">{{patient.address}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="medicalHistory">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Medical History</th>
+                <td mat-cell *matCellDef="let patient">{{patient.medicalHistory}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="allergies">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Allergies</th>
+                <td mat-cell *matCellDef="let patient">{{patient.allergies}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="currentMedications">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Current Medications</th>
+                <td mat-cell *matCellDef="let patient">{{patient.currentMedications}}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+        </mat-card>
+
+        <mat-card class="upcoming-appointments-card">
+          <mat-card-header>Upcoming Appointments</mat-card-header>
+        </mat-card>
+
+        <mat-card class="room-availability-card">
+          <mat-card-header>Available Rooms for the Day</mat-card-header>
+        </mat-card>
+      </div>
+
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
+
+
