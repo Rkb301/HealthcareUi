@@ -1,4 +1,44 @@
-/* patient-table.scss */
+@use "sass:color";
+
+/* Dashboard color palette */
+$primary-color:   #3f51b5;
+$text-color:      #212121;
+$alt-row-color:   #f2f4f8;
+
+/* Table styling */
+.mat-table {
+  .mat-header-cell {
+    background: $primary-color;
+    color: #fff;
+    font-weight: 600;
+  }
+  .mat-row:nth-child(even) {
+    background: $alt-row-color;
+  }
+  .mat-row:hover {
+    background: color.adjust($alt-row-color, $lightness: 5%);
+  }
+  .mat-cell, .mat-header-cell {
+    border-bottom: 1px solid color.adjust($primary-color, $lightness: 60%);
+  }
+}
+
+/* Paginator & Sort icons */
+.mat-paginator, .mat-sort-header-arrow {
+  color: $primary-color;
+}
+
+/* Buttons */
+button.mat-raised-button.mat-primary,
+button.mat-stroked-button.mat-primary {
+  background-color: $primary-color;
+  color: #fff;
+  &:hover {
+    background-color: color.adjust($primary-color, $lightness: -8%);
+  }
+}
+
+/* _table-styles.scss */
 
 ::ng-deep .mat-table-wrapper {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -74,5 +114,3 @@
 ::ng-deep .mat-sort-header-sorted .mat-sort-header-arrow {
   fill: #333;
 }
-
-

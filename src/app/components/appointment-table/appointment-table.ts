@@ -1,15 +1,19 @@
-import {
-  Component,
-  AfterViewInit,
-  ViewChild,
-  ElementRef
-} from '@angular/core';
+import { Component, AfterViewInit, ViewChild, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule }     from '@angular/material/input';
-import { MatButtonModule }    from '@angular/material/button';
-import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import { DateTime } from 'luxon';
+import { MatInputModule }      from '@angular/material/input';
+import { MatButtonModule }     from '@angular/material/button';
+import { MatTableModule }      from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort }           from '@angular/material/sort';
+import { MatProgressSpinnerModule }         from '@angular/material/progress-spinner';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { HttpClient, HttpParams }           from '@angular/common/http';
+import Swal                                 from 'sweetalert2';
+import { AppointmentWithNamesDTO, Appointment }          from '../../models/appointment.model';
+import { MatIconModule }                    from '@angular/material/icon';
+import { merge, of, combineLatest, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-appointment-table',
@@ -18,76 +22,175 @@ import { DateTime } from 'luxon';
     CommonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatProgressSpinnerModule,
+    ReactiveFormsModule,
+    MatIconModule
   ],
   templateUrl: './appointment-table.html',
-  styleUrl: './appointment-table.scss'
+  styleUrls: ['./appointment-table.scss']
 })
-export class AppointmentTable {
-  public tabulator!: Tabulator;
-
-  @ViewChild('filterInput',  { static: true }) filterInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('appointmentTableContainer', { static: true }) tableContainer!: ElementRef<HTMLDivElement>;
+export class AppointmentTable implements AfterViewInit, OnDestroy {
+  private http       = inject(HttpClient);
+  private destroy$   = new Subject<void>();
+  displayedColumns  = ['patientName','doctorName','appointmentDate','reason','status','notes','actions'];
+  data: AppointmentWithNamesDTO[] = [];
+  resultsLength     = 0;
+  isLoading         = true;
+  isRateLimitReached= false;
+  searchControl     = new FormControl('');
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort)       sort!: MatSort;
+  private baseUrl = 'http://localhost:5122/api/appointment';
 
   ngAfterViewInit() {
-    this.tabulator = new Tabulator(this.tableContainer.nativeElement, {
-      ajaxURL: 'http://localhost:5122/api/appointment/search-lucene',
-      ajaxConfig: 'GET',
+    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+    const search$    = this.searchControl.valueChanges.pipe(
+      startWith(''),
+      debounceTime(300),
+      distinctUntilChanged(),
+      map(q => q?.trim())
+    );
+    const pageSort$  = merge(this.sort.sortChange, this.paginator.page).pipe(startWith({}));
 
-      pagination: true,
-      paginationMode: 'remote',
-      paginationSize: 10,
-      paginationSizeSelector: [5, 10, 20, 100],
-      ajaxFiltering: true,
-      ajaxSorting: true,
-
-      dataReceiveParams: {
-        data: 'data',
-        last_page: 'totalCount'
-      },
-
-      ajaxURLGenerator: (url, _config, params) => {
-        const p = new URLSearchParams();
-
-        p.set('pageNumber', String(params.page));
-        p.set('pageSize', String(params.size));
-
-        if (params.sorters?.length) {
-          p.set('sort',  params.sorters[0].field);
-          p.set('order', params.sorters[0].dir);
+    combineLatest([search$, pageSort$]).pipe(
+      switchMap(([q]) => {
+        this.isLoading = true;
+        let params = new HttpParams()
+          .set('pageNumber', (this.paginator.pageIndex + 1).toString())
+          .set('pageSize',   this.paginator.pageSize.toString());
+        if (this.sort.active) {
+          params = params.set('sort', this.sort.active)
+                         .set('order', this.sort.direction);
         }
-
-        const query = this.filterInput.nativeElement.value;
-
-        if (query) {
-          p.set('query', query);
+        if (q) {
+          params = params.set('query', q);
+          return this.http.get<any>(`${this.baseUrl}/search-lucene`, { params });
         }
+        return this.http.get<any>(`${this.baseUrl}`, { params });
+      }),
+      catchError(() => { this.isRateLimitReached=true; return of(null); }),
+      map(res => {
+        this.isLoading = false;
+        if (!res) return [];
+        this.resultsLength = res.totalCount;
+        return res.data;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(data => this.data = data);
+  }
 
-        return `${url}?${p.toString()}`;
-      },
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-      columns: [
-        { title: 'Patient Name', field: 'patientName' },
-        { title: 'Doctor Name', field: 'doctorName' },
-        { title: 'Date', field: 'appointmentDate' },
-        { title: 'Reason', field: 'reason' },
-        { title: 'Status', field: 'status' },
-        { title: 'Notes', field: 'notes' }
-      ],
+  clearFilter() {
+    this.searchControl.setValue('');
+    this.paginator.pageIndex = 0;
+  }
 
-      layout: 'fitColumns',
-      height: '500px'
-    });
-
-    this.filterInput.nativeElement.addEventListener('keyup', () => {
-      this.tabulator.setPage(1);
-      this.tabulator.replaceData();
+  createRow() {
+    const fields = [
+      { key: 'patientID', label: 'Patient ID', type: 'number' },
+      { key: 'doctorID',  label: 'Doctor ID',  type: 'number' },
+      { key: 'appointmentDate', label: 'Date', type: 'date' },
+      { key: 'reason',    label: 'Reason',   type: 'text' },
+      { key: 'status',    label: 'Status',   type: 'text' },
+      { key: 'notes',     label: 'Notes',    type: 'text' },
+    ];
+    const html = fields.map(f => `
+      <label>${f.label}</label>
+      <input id="${f.key}" type="${f.type}" class="swal2-input">
+    `).join('');
+    Swal.fire({
+      title: 'New Appointment',
+      html,
+      showCancelButton: true,
+      confirmButtonText: 'Create',
+      focusConfirm: false,
+      preConfirm: () => {
+        const dto: any = {};
+        for (const f of fields) {
+          const el = (Swal.getPopup()!.querySelector(`#${f.key}`) as HTMLInputElement);
+          if (!el.value) {
+            Swal.showValidationMessage(`${f.label} is required`);
+            return;
+          }
+          dto[f.key] = f.type === 'number' ? +el.value : el.value;
+        }
+        return dto;
+      }
+    }).then(res => {
+      if (res.isConfirmed && res.value) {
+        this.http.post(this.baseUrl, res.value).subscribe({
+          next: () => { Swal.fire('Created','Appointment added','success'); this.ngAfterViewInit(); },
+          error: () => Swal.fire('Error','Creation failed','error')
+        });
+      }
     });
   }
 
-  clearFilter(): void {
-    this.filterInput.nativeElement.value = '';
-    this.tabulator.setPage(1);
-    this.tabulator.replaceData();
+  editRow(row: AppointmentWithNamesDTO) {
+    const fields = [
+      { key: 'appointmentDate', label: 'Date', type: 'date', value: row.appointmentDate },
+      { key: 'reason',    label: 'Reason', type: 'text', value: row.reason },
+      { key: 'status',    label: 'Status', type: 'text', value: row.status },
+      { key: 'notes',     label: 'Notes',  type: 'text', value: row.notes }
+    ];
+    const html = fields.map(f => `
+      <label>${f.label}</label>
+      <input id="${f.key}" type="${f.type}" class="swal2-input" value="${f.value||''}">
+    `).join('');
+    Swal.fire({
+      title: 'Edit Appointment',
+      html,
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      focusConfirm: false,
+      preConfirm: () => {
+        const obj: any = {};
+        for (const f of fields) {
+          const el = (Swal.getPopup()!.querySelector(`#${f.key}`) as HTMLInputElement);
+          if (!el.value) {
+            Swal.showValidationMessage(`${f.label} is required`);
+            return;
+          }
+          obj[f.key] = el.value;
+        }
+        return obj;
+      }
+    }).then(res => {
+      if (res.isConfirmed && res.value) {
+        const ops = Object.keys(res.value).map(k => ({
+          op: 'replace', path: `/${k}`, value: res.value[k]
+        }));
+        this.http.patch(`${this.baseUrl}/${row.appointmentID}`, ops, {
+          headers: { 'Content-Type': 'application/json-patch+json' }
+        }).subscribe({
+          next: () => { Swal.fire('Saved','Appointment updated','success'); this.ngAfterViewInit(); },
+          error: () => Swal.fire('Error','Update failed','error')
+        });
+      }
+    });
+  }
+
+  deleteRow(row: AppointmentWithNamesDTO) {
+    Swal.fire({
+      title: 'Confirm Delete',
+      text: 'This will soft-delete the appointment.',
+      icon: 'warning',
+      showCancelButton: true
+    }).then(r => {
+      if (r.isConfirmed) {
+        this.http.delete(`${this.baseUrl}/${row.appointmentID}`).subscribe({
+          next: () => { Swal.fire('Deleted','Appointment removed','success'); this.ngAfterViewInit(); },
+          error: () => Swal.fire('Error','Deletion failed','error')
+        });
+      }
+    });
   }
 }

@@ -192,17 +192,23 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   }
 
   deleteRow(row: Patient): void {
-    const delID = this.getPatientID(row);
-    this.http.delete(`${this.baseUrl}/${delID}`)
-      .subscribe({
-        next: () => {
-          Swal.fire('Deleted', 'Patient removed successfully', 'success');
-          this.setupDynamicSearch();
-        },
-        error: () => {
-          Swal.fire('Error', 'Deletion failed', 'error');
-        }
-      });
+    this.getPatientID(row).subscribe({
+      next: (patientId) => {
+        this.http.delete(`${this.baseUrl}/${patientId}`)
+          .subscribe({
+            next: () => {
+              Swal.fire('Deleted', 'Patient removed successfully', 'success');
+              this.setupDynamicSearch();
+            },
+            error: () => {
+              Swal.fire('Error', 'Deletion failed', 'error');
+            }
+          });
+      },
+      error: (error) => {
+        Swal.fire('Error', error.message || 'Could not retrieve patient ID', 'error');
+      }
+    });
   }
 
   private openPatientModal(existing?: Patient): Promise<Patient> {

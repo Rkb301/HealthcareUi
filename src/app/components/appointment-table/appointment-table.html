@@ -1,13 +1,62 @@
-<div class="appointment-table-container mat-elevation-z8">
-
-  <div class="search-bar">
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Search Appointment details</mat-label>
-      <input matInput #filterInput placeholder="Check appointment details">
-    </mat-form-field>
-
-    <button mat-raised-button color="primary" (click)="clearFilter()">Clear</button>
-  </div>
-
-  <div #appointmentTableContainer id="appointment-table"></div>
+<div class="toolbar">
+  <mat-form-field>
+    <mat-label>Search</mat-label>
+    <input matInput [formControl]="searchControl" placeholder="Search appointments">
+    <button mat-button *ngIf="searchControl.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearFilter()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+  <button mat-flat-button color="primary" (click)="createRow()">New Appointment</button>
 </div>
+
+<table mat-table [dataSource]="data" matSort class="mat-elevation-z8">
+  <!-- Patient Name Column -->
+  <ng-container matColumnDef="patientName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Patient</th>
+    <td mat-cell *matCellDef="let row">{{row.patientName}}</td>
+  </ng-container>
+
+  <!-- Doctor Name Column -->
+  <ng-container matColumnDef="doctorName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Doctor</th>
+    <td mat-cell *matCellDef="let row">{{row.doctorName}}</td>
+  </ng-container>
+
+  <!-- Date Column -->
+  <ng-container matColumnDef="appointmentDate">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+    <td mat-cell *matCellDef="let row">{{row.appointmentDate | date}}</td>
+  </ng-container>
+
+  <!-- Reason Column -->
+  <ng-container matColumnDef="reason">
+    <th mat-header-cell *matHeaderCellDef>Reason</th>
+    <td mat-cell *matCellDef="let row">{{row.reason}}</td>
+  </ng-container>
+
+  <!-- Status Column -->
+  <ng-container matColumnDef="status">
+    <th mat-header-cell *matHeaderCellDef>Status</th>
+    <td mat-cell *matCellDef="let row">{{row.status}}</td>
+  </ng-container>
+
+  <!-- Notes Column -->
+  <ng-container matColumnDef="notes">
+    <th mat-header-cell *matHeaderCellDef>Notes</th>
+    <td mat-cell *matCellDef="let row">{{row.notes}}</td>
+  </ng-container>
+
+  <!-- Actions Column -->
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let row">
+      <button mat-icon-button color="primary" (click)="editRow(row)"><mat-icon>edit</mat-icon></button>
+      <button mat-icon-button color="warn" (click)="deleteRow(row)"><mat-icon>delete</mat-icon></button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row        *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+
+<mat-paginator [length]="resultsLength" [pageSize]="10" showFirstLastButtons></mat-paginator>
