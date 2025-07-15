@@ -1,0 +1,265 @@
+<div class="page-container">
+  <mat-sidenav-container class="dashboard-container">
+    <mat-sidenav class="sidebar" #sidenav mode="side" closed>
+      <mat-nav-list>
+        <a class="nav-item" mat-list-item routerLink="/patient-home">
+          <mat-icon>home</mat-icon>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="">
+          <mat-icon>event</mat-icon>
+          <span>Appointments</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="">
+          <mat-icon>medical_services</mat-icon>
+          <span>Health Records</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="">
+          <mat-icon>payment</mat-icon>
+          <span>Billing</span>
+        </a>
+      </mat-nav-list>
+
+      <button class="logout-btn" (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="toolbar">
+        <mat-toolbar color="primary">
+          <button mat-icon-button (click)="sidenav.toggle()">
+            <mat-icon>menu</mat-icon>
+          </button>
+          <span>Patient Portal</span>
+          <mat-icon class="account">account_circle</mat-icon>
+        </mat-toolbar>
+      </div>
+
+      <!-- Notifications Banner -->
+      <div class="notifications-banner" *ngIf="notifications.length > 0">
+        <mat-card class="notification-card" *ngFor="let notification of notifications">
+          <mat-card-content>
+            <div class="notification-content">
+              <mat-icon [color]="notification.priority === 'high' ? 'warn' : 'primary'">
+                {{ notification.type === 'prescription' ? 'medication' : 'notification_important' }}
+              </mat-icon>
+              <span class="notification-message">{{ notification.message }}</span>
+              <button mat-icon-button (click)="dismissNotification(notification.notificationID)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="dashboard-layout">
+        <!-- Top Panel - Upcoming Appointments -->
+        <div class="top-panel-section">
+          <mat-card class="appointments-card main-panel">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>event</mat-icon>
+                Upcoming Appointments
+              </mat-card-title>
+              <div class="header-actions">
+                <button mat-raised-button color="primary" (click)="bookNewAppointment()">
+                  <mat-icon>add</mat-icon>
+                  Book New
+                </button>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-container">
+                <table mat-table [dataSource]="appointmentDataSource" class="appointments-table">
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                    <td mat-cell *matCellDef="let appointment">{{ appointment.date | date:'shortDate' }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="time">
+                    <th mat-header-cell *matHeaderCellDef>Time</th>
+                    <td mat-cell *matCellDef="let appointment">{{ appointment.time }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="doctorName">
+                    <th mat-header-cell *matHeaderCellDef>Doctor</th>
+                    <td mat-cell *matCellDef="let appointment">{{ appointment.doctorName }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="reason">
+                    <th mat-header-cell *matHeaderCellDef>Reason</th>
+                    <td mat-cell *matCellDef="let appointment">{{ appointment.reason }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let appointment">
+                      <mat-chip [color]="getStatusColor(appointment.status)">
+                        {{ appointment.status }}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let appointment">
+                      <button mat-icon-button (click)="rescheduleAppointment(appointment.appointmentID)">
+                        <mat-icon>schedule</mat-icon>
+                      </button>
+                      <button mat-icon-button (click)="cancelAppointment(appointment.appointmentID)">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="appointmentColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: appointmentColumns;"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Bottom Section - Three Cards -->
+        <div class="bottom-panels-section">
+          <mat-tab-group class="info-tabs">
+            <!-- Medical Summary Tab -->
+            <mat-tab label="Medical Summary">
+              <div class="tab-content">
+                <div class="medical-summary">
+                  <!-- Active Prescriptions -->
+                  <div class="prescriptions-section">
+                    <h3>Active Prescriptions</h3>
+                    <table mat-table [dataSource]="prescriptionDataSource" class="prescriptions-table">
+                      <ng-container matColumnDef="medicationName">
+                        <th mat-header-cell *matHeaderCellDef>Medication</th>
+                        <td mat-cell *matCellDef="let prescription">{{ prescription.medicationName }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="dosage">
+                        <th mat-header-cell *matHeaderCellDef>Dosage</th>
+                        <td mat-cell *matCellDef="let prescription">{{ prescription.dosage }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="frequency">
+                        <th mat-header-cell *matHeaderCellDef>Frequency</th>
+                        <td mat-cell *matCellDef="let prescription">{{ prescription.frequency }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="refillsRemaining">
+                        <th mat-header-cell *matHeaderCellDef>Refills</th>
+                        <td mat-cell *matCellDef="let prescription">
+                          <span [class.low-refills]="prescription.refillsRemaining === 0">
+                            {{ prescription.refillsRemaining }}
+                          </span>
+                        </td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef>Actions</th>
+                        <td mat-cell *matCellDef="let prescription">
+                          <button mat-button color="primary" (click)="requestRefill(prescription.prescriptionID)">
+                            <mat-icon>refresh</mat-icon>
+                            Refill
+                          </button>
+                        </td>
+                      </ng-container>
+
+                      <tr mat-header-row *matHeaderRowDef="prescriptionColumns"></tr>
+                      <tr mat-row *matRowDef="let row; columns: prescriptionColumns;"></tr>
+                    </table>
+                  </div>
+
+                  <!-- Recent Lab Results -->
+                  <div class="lab-results-section">
+                    <h3>Recent Lab Results</h3>
+                    <table mat-table [dataSource]="labResultDataSource" class="lab-results-table">
+                      <ng-container matColumnDef="testName">
+                        <th mat-header-cell *matHeaderCellDef>Test</th>
+                        <td mat-cell *matCellDef="let result">{{ result.testName }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="result">
+                        <th mat-header-cell *matHeaderCellDef>Result</th>
+                        <td mat-cell *matCellDef="let result">{{ result.result }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="normalRange">
+                        <th mat-header-cell *matHeaderCellDef>Normal Range</th>
+                        <td mat-cell *matCellDef="let result">{{ result.normalRange }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="date">
+                        <th mat-header-cell *matHeaderCellDef>Date</th>
+                        <td mat-cell *matCellDef="let result">{{ result.date | date:'shortDate' }}</td>
+                      </ng-container>
+
+                      <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef>Status</th>
+                        <td mat-cell *matCellDef="let result">
+                          <mat-chip [color]="getStatusColor(result.status)">
+                            {{ result.status }}
+                          </mat-chip>
+                        </td>
+                      </ng-container>
+
+                      <tr mat-header-row *matHeaderRowDef="labResultColumns"></tr>
+                      <tr mat-row *matRowDef="let row; columns: labResultColumns;"></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+
+            <!-- Care Team Tab -->
+            <mat-tab label="Care Team">
+              <div class="tab-content">
+                <div class="care-team-info" *ngIf="primaryDoctor">
+                  <mat-card class="doctor-card">
+                    <mat-card-header>
+                      <div mat-card-avatar>
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <mat-card-title>{{ primaryDoctor.firstName }} {{ primaryDoctor.lastName }}</mat-card-title>
+                      <mat-card-subtitle>{{ primaryDoctor.specialty }}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <p><strong>Office Hours:</strong> {{ primaryDoctor.officeHours }}</p>
+                      <p><strong>Phone:</strong> {{ primaryDoctor.phone }}</p>
+                      <p><strong>Email:</strong> {{ primaryDoctor.email }}</p>
+                    </mat-card-content>
+                    <mat-card-actions>
+                      <button mat-button color="primary" (click)="messageDoctor()">
+                        <mat-icon>message</mat-icon>
+                        Message
+                      </button>
+                      <button mat-button color="accent" (click)="contactDoctor()">
+                        <mat-icon>phone</mat-icon>
+                        Contact
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                </div>
+              </div>
+            </mat-tab>
+
+            <!-- Health Records Tab -->
+            <mat-tab label="Health Records">
+              <div class="tab-content">
+                <div class="health-records">
+                  <div class="coming-soon">
+                    <mat-icon>folder_shared</mat-icon>
+                    <h3>Health Records</h3>
+                    <p>Access to your complete health records, including medical history, immunizations, and test results will be available here.</p>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
