@@ -213,24 +213,55 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
   private openPatientModal(existing?: Patient): Promise<Patient> {
     const fields = [
-      // { key: 'userID', label: 'User ID', type: 'number'},
-      { key: 'firstName', label: 'First Name', type: 'text' },
-      { key: 'lastName',  label: 'Last Name',  type: 'text' },
-      { key: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
-      { key: 'gender',    label: 'Gender',       type: 'text' },
-      { key: 'contactNumber', label: 'Contact Number', type: 'text' },
-      { key: 'address',   label: 'Address',      type: 'text' },
-      { key: 'medicalHistory', label: 'Medical History', type: 'text' },
-      { key: 'allergies', label: 'Allergies',    type: 'text' },
+      { key: 'firstName',       label: 'First Name',         type: 'text' },
+      { key: 'lastName',        label: 'Last Name',          type: 'text' },
+      { key: 'dateOfBirth',     label: 'Date of Birth',      type: 'date' },
+      { key: 'gender',          label: 'Gender',             type: 'select', options: ['Male','Female','Other'] },
+      { key: 'contactNumber',   label: 'Contact Number',     type: 'number' },
+      { key: 'address',         label: 'Address',            type: 'text' },
+      { key: 'medicalHistory',  label: 'Medical History',    type: 'text' },
+      { key: 'allergies',       label: 'Allergies',          type: 'text' },
       { key: 'currentMedications', label: 'Current Medications', type: 'text' }
     ];
 
-    // Generate HTML string with inputs
-    const html = fields.map(f => `
-      <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
-      <input id="${f.key}" class="swal2-input" type="${f.type}"
-       value="${existing ? (existing as any)[f.key] ?? '' : ''}">
-    `).join('');
+    function getDefaultValue(key: string, type: string): string {
+      const defaults: Record<string,string> = {
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        contactNumber: '1234567890',
+        address: '123 Main St',
+        medicalHistory: 'None',
+        allergies: 'None',
+        currentMedications: 'None'
+      };
+      if (type === 'date') {
+        return new Date().toISOString().split('T')[0];
+      }
+      return defaults[key] ?? '';
+    }
+
+    const html = fields.map(f => {
+      const value = existing
+        ? (existing as any)[f.key] ?? getDefaultValue(f.key, f.type)
+        : getDefaultValue(f.key, f.type);
+
+      if (f.type === 'select') {
+        return `
+          <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
+          <select id="${f.key}" class="swal2-input" style="padding:0.5em">
+            ${f.options!.map(opt => `
+              <option value="${opt}"
+                ${opt === value ? 'selected' : ''}>
+                ${opt}
+              </option>`).join('')}
+          </select>`;
+      }
+
+      return `
+        <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
+        <input id="${f.key}" class="swal2-input" type="${f.type}"
+               value="${value}">`;
+    }).join('');
 
     return Swal.fire({
       title: existing ? 'Edit Patient' : 'New Patient',
@@ -240,48 +271,33 @@ export class PatientTable implements AfterViewInit, OnDestroy {
       focusConfirm: false,
       width: '600px',
       preConfirm: () => {
-        // On confirm, read values back from DOM
         const result: any = {};
-
         for (const f of fields) {
-          const el = (Swal.getPopup()!.querySelector(`#${f.key}`) as HTMLInputElement);
-
-          if (!el || !el.value) {
+          const selector = `#${f.key}`;
+          const el = Swal.getPopup()!.querySelector(selector) as
+                     HTMLInputElement|HTMLSelectElement|null;
+          const val = el?.value.trim();
+          if (!el || !val) {
             Swal.showValidationMessage(`${f.label} is required`);
             return;
           }
-
-          let value: any = el.value;
-          if (f.key === 'userID') {
-            const num = parseInt(el.value, 10);
-            if (isNaN(value)) {
-              Swal.showValidationMessage('User ID must be a number');
-              return;
-            }
-            value = num;
-          }
-          if (f.key === 'userID') {
-            result[f.key] = parseInt(el.value, 10);
-          } else {
-            result[f.key] = el.value;
-          }
+          result[f.key] = val;
         }
-
         return result as Patient;
       }
     }).then(res => {
       if (res.isConfirmed && res.value) {
         return Promise.resolve(res.value);
       }
-
       return Promise.reject('cancelled');
     });
   }
 
+
   editRow(row: Patient) {
     this.openPatientModal(row)
       .then(edited => {
-        // Build JSON-Patch operations
+        // build JSON Patch operation
         const ops = Object.keys(edited).map< JsonPatchOperation >(key => ({
           op: 'replace',
           path: `/${key}`,

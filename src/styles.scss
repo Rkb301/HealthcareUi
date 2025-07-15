@@ -1,88 +1,471 @@
-/* You can add global styles to this file, and also import other style files */
+/* ────────────────────────────────────────────────
+   Healthcare Application - Material 3 Theme
+   Based on Angular.love guide for proper M3 implementation
+   ──────────────────────────────────────────────── */
 
+@use '@angular/material' as mat;
+@use 'theme-colors' as theme;
 
-body {
-  background-color: #f5f5f5;
-  margin: 0;
-  font-family: Roboto, sans-serif;
+// Include Material Design core (required)
+@include mat.core();
+
+/* ────────────────────────────────────────────────
+   Main Theme Application (Light Mode)
+   ──────────────────────────────────────────────── */
+
+html {
+  @include mat.theme((
+    color: (
+      primary: theme.$primary-palette,
+      tertiary: theme.$tertiary-palette,
+    ),
+    typography: (
+      plain-family: Roboto,
+      brand-family: 'Roboto Slab',
+      regular-weight: 400,
+      medium-weight: 500,
+      bold-weight: 700,
+    ),
+    density: 0,
+  ));
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* ────────────────────────────────────────────────
+   Dark Mode Support (System Preference)
+   ──────────────────────────────────────────────── */
 
+@media (prefers-color-scheme: dark) {
+  html {
+    @include mat.theme((
+      color: (
+        primary: theme.$primary-palette,
+        tertiary: theme.$tertiary-palette,
+        theme-type: dark,
+      ),
+      typography: (
+        plain-family: Roboto,
+        brand-family: 'Roboto Slab',
+        regular-weight: 400,
+        medium-weight: 500,
+        bold-weight: 700,
+      ),
+      density: 0,
+    ));
+  }
+}
 
-/* 1. Wrap each table in a translucent card */
+/* Manual dark mode class override */
+body.dark-mode {
+  color-scheme: dark;
+
+  @include mat.theme((
+    color: (
+      primary: theme.$primary-palette,
+      tertiary: theme.$tertiary-palette,
+      theme-type: dark,
+    ),
+    typography: (
+      plain-family: Roboto,
+      brand-family: 'Roboto Slab',
+    ),
+    density: 0,
+  ));
+}
+
+/* ────────────────────────────────────────────────
+   Global Base Styles
+   ──────────────────────────────────────────────── */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ────────────────────────────────────────────────
+   Healthcare Application Layout
+   ──────────────────────────────────────────────── */
+
+.page-container,
+.dashboard-container {
+  height: 100vh;
+  background: var(--mat-sys-background);
+}
+
+/* ────────────────────────────────────────────────
+   Healthcare Data Tables (Enhanced for Medical Records)
+   ──────────────────────────────────────────────── */
+
 .patient-table-container,
 .doctor-table-container,
 .appointment-table-container {
-  background: rgba(255, 255, 255, 0.85);  /* soft white card */
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin: 16px;
-  padding: 0.25rem;
+  background: var(--mat-sys-surface-container);
+  border-radius: var(--mat-sys-corner-large);
+  box-shadow: var(--mat-sys-level2);
+  margin: 1rem;
+  padding: 0.5rem;
   overflow: hidden;
+  border: 1px solid var(--mat-sys-outline-variant);
 }
 
-/* 2. Darken header row for strong contrast */
+/* Table headers with healthcare-appropriate contrast */
 .patient-table-container .tabulator-header,
-.doctor-table-container  .tabulator-header,
+.doctor-table-container .tabulator-header,
 .appointment-table-container .tabulator-header {
-  background-color: #2c2c2c;  /* charcoal */
-  color: #ffffff;             /* white text */
-  font-weight: 520;
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.025rem;
 }
 
-/* 3. Improve header text visibility */
 .patient-table-container .tabulator-col-title,
-.doctor-table-container  .tabulator-col-title,
+.doctor-table-container .tabulator-col-title,
 .appointment-table-container .tabulator-col-title {
-  color: #050505;             /* ensure titles stay white */
+  color: var(--mat-sys-on-primary);
+  font-weight: 600;
 }
 
-/* 4. Tinted row backgrounds to tie into your gradient */
+/* Row styling for medical data readability */
 .patient-table-container .tabulator-row:nth-child(even),
-.doctor-table-container  .tabulator-row:nth-child(even),
+.doctor-table-container .tabulator-row:nth-child(even),
 .appointment-table-container .tabulator-row:nth-child(even) {
-  background-color: rgba(255, 75, 43, 0.08);  /* light orange tint */
+  background-color: var(--mat-sys-surface-container-low);
 }
+
 .patient-table-container .tabulator-row:nth-child(odd),
-.doctor-table-container  .tabulator-row:nth-child(odd),
+.doctor-table-container .tabulator-row:nth-child(odd),
 .appointment-table-container .tabulator-row:nth-child(odd) {
-  background-color: rgba(255, 255, 255, 0.75); /* translucent white */
+  background-color: var(--mat-sys-surface);
 }
 
-/* 5. Highlight on hover with stronger accent */
 .patient-table-container .tabulator-row:hover,
-.doctor-table-container  .tabulator-row:hover,
+.doctor-table-container .tabulator-row:hover,
 .appointment-table-container .tabulator-row:hover {
-  background-color: rgba(255, 75, 43, 0.2);  /* stronger orange */
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
 }
 
-/* 6. Style the search bar so it’s visible */
+/* Enhanced search functionality for healthcare data */
 .patient-table-container .search-bar,
-.doctor-table-container  .search-bar,
+.doctor-table-container .search-bar,
 .appointment-table-container .search-bar {
-  background: rgba(44, 44, 44, 0.5);   /* dark translucent backdrop */
-  padding: 0.75rem;
-  border-radius: 6px;
+  background: var(--mat-sys-surface-container-high);
+  padding: 1rem;
+  border-radius: var(--mat-sys-corner-medium);
+  margin-bottom: 1rem;
+  border: 1px solid var(--mat-sys-outline-variant);
 }
 
-.patient-table-container .search-bar .mat-form-field-infix,
-.doctor-table-container  .search-bar .mat-form-field-infix,
-.appointment-table-container .search-bar .mat-form-field-infix {
-  background: #ffffff;        /* white input */
-  border-radius: 4px;
+.patient-table-container .search-bar .mat-form-field,
+.doctor-table-container .search-bar .mat-form-field,
+.appointment-table-container .search-bar .mat-form-field {
+  width: 100%;
 }
 
 .patient-table-container .search-bar input,
-.doctor-table-container  .search-bar input,
+.doctor-table-container .search-bar input,
 .appointment-table-container .search-bar input {
-  color: #333333;             /* dark text for readability */
+  color: var(--mat-sys-on-surface);
+  background-color: var(--mat-sys-surface);
 }
 
-/* 7. Resize the clear button for balance */
 .patient-table-container .search-bar button,
-.doctor-table-container  .search-bar button,
+.doctor-table-container .search-bar button,
 .appointment-table-container .search-bar button {
   min-height: 40px;
+  color: var(--mat-sys-primary);
+}
+
+/* ────────────────────────────────────────────────
+   Doctor Home Component Styling
+   ──────────────────────────────────────────────── */
+
+/* Toolbar customization */
+.toolbar mat-toolbar {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  box-shadow: var(--mat-sys-level2);
+
+  span {
+    color: var(--mat-sys-on-primary);
+  }
+
+  .account {
+    margin-left: auto;
+    font-size: 1.75rem;
+    color: var(--mat-sys-on-primary);
+  }
+}
+
+/* Sidenav styling */
+mat-sidenav.sidebar {
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  width: 280px;
+
+  .nav-item {
+    color: var(--mat-sys-on-surface);
+    padding: 0.75rem 1rem;
+    margin: 0.25rem 0.5rem;
+    border-radius: var(--mat-sys-corner-small);
+    transition: all 0.2s ease;
+
+    span {
+      color: var(--mat-sys-on-surface);
+    }
+
+    &:hover {
+      background-color: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+
+      span {
+        color: var(--mat-sys-on-primary-container);
+      }
+    }
+
+    &.active {
+      background-color: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+
+      span {
+        color: var(--mat-sys-on-primary);
+      }
+    }
+  }
+
+  .logout-btn {
+    margin-top: auto;
+    background: transparent;
+    border: none;
+    color: var(--mat-sys-error);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
+    }
+  }
+}
+
+/* Present appointments card */
+mat-card.present-appointments-card {
+  margin: 1.5rem auto;
+  width: 92%;
+  max-width: 1450px;
+  background: var(--mat-sys-surface-container);
+  border: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: var(--mat-sys-level2);
+  border-radius: var(--mat-sys-corner-large);
+
+  mat-card-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+    padding: 1rem;
+    border-radius: var(--mat-sys-corner-large) var(--mat-sys-corner-large) 0 0;
+    margin: -1rem -1rem 1rem -1rem;
+
+    .present-appoint-title {
+      color: var(--mat-sys-on-primary-container);
+      font-weight: 600;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+  }
+
+  mat-card-content {
+    height: calc(100% - 80px);
+
+    .table-container {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: var(--mat-sys-surface-container-low);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--mat-sys-primary);
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: var(--mat-sys-primary-container);
+      }
+    }
+  }
+}
+
+/* ────────────────────────────────────────────────
+   Angular Material Table Styling (Using :host ::ng-deep)
+   ──────────────────────────────────────────────── */
+
+:host ::ng-deep {
+  .present-appointments-card {
+    .mat-mdc-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--mat-sys-surface);
+      border-radius: var(--mat-sys-corner-medium);
+    }
+
+    .mat-mdc-header-row {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+    }
+
+    .mat-mdc-header-cell {
+      color: var(--mat-sys-on-primary);
+      font-weight: 700;
+      font-size: 0.875rem;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    .mat-mdc-row:nth-child(odd) {
+      background: var(--mat-sys-surface-container-low);
+    }
+
+    .mat-mdc-row:nth-child(even) {
+      background: var(--mat-sys-surface);
+    }
+
+    .mat-mdc-row:hover {
+      background: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+    }
+
+    .mat-mdc-cell {
+      padding: 11px 14px;
+      color: var(--mat-sys-on-surface);
+      font-size: 0.875rem;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+  }
+}
+
+/* ────────────────────────────────────────────────
+   Grid layout for healthcare cards
+   ──────────────────────────────────────────────── */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.card-grid mat-card {
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  border-radius: var(--mat-sys-corner-large);
+  box-shadow: var(--mat-sys-level1);
+  border: 1px solid var(--mat-sys-outline-variant);
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+
+  mat-card-header {
+    color: var(--mat-sys-on-surface);
+    font-size: 1.1rem;
+  }
+}
+
+/* ────────────────────────────────────────────────
+   Responsive Design
+   ──────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+
+  mat-sidenav.sidebar {
+    width: 240px;
+  }
+
+  .present-appointments-card {
+    width: 98%;
+    margin: 0.5rem auto;
+
+    .present-appoint-title {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+/* ────────────────────────────────────────────────
+   Accessibility Enhancements
+   ──────────────────────────────────────────────── */
+
+/* Focus indicators */
+.mat-mdc-button:focus,
+.mat-mdc-raised-button:focus,
+.mat-mdc-flat-button:focus {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .patient-table-container,
+  .doctor-table-container,
+  .appointment-table-container {
+    border: 2px solid var(--mat-sys-outline);
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    border-bottom: 2px solid var(--mat-sys-outline);
+  }
+}
+
+/* Print styles for healthcare documents */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .patient-table-container,
+  .doctor-table-container,
+  .appointment-table-container {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+  }
+
+  mat-sidenav,
+  mat-toolbar {
+    display: none !important;
+  }
 }

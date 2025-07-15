@@ -5,7 +5,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
@@ -36,11 +36,11 @@ export class Login {
 
   signInForm = this.fb.nonNullable.group({
     loginEmail:    ['', [Validators.required, Validators.email]],
-    loginPassword: ['', [Validators.required, Validators.minLength(6)]],
+    loginPassword: ['', [Validators.required]],
   });
 
   signUpForm = this.fb.nonNullable.group({
-    signUpName:     ['', Validators.required],
+    signUpName:     ['', Validators.required, Validators.pattern('[a-zA-Z ]')],
     signUpEmail:    ['', [Validators.required, Validators.email]],
     signUpPassword: ['', [Validators.required, Validators.minLength(6)]],
     signUpRole:     ['Patient', Validators.required],
@@ -92,9 +92,19 @@ export class Login {
 
   showSignUp() {
     this.rightPanelActive = true;
+    this.signInForm.reset();
   }
 
   showSignIn() {
     this.rightPanelActive = false;
+    this.signUpForm.reset();
+  }
+
+  ngOnInit() {
+    // this.router.events.subscribe(evt => {
+    //   if (evt instanceof NavigationStart && (evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
+    //     this.router.navigate(['/login'])
+    //   }
+    // })
   }
 }

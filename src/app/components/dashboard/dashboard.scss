@@ -12,7 +12,8 @@ div.toolbar {
     }
 
     mat-icon.account {
-      padding-left: 960px;
+      position:fixed;
+      left: 1650px;
       scale: 1.5;
       color: #FFFFFF;
     }

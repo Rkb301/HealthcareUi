@@ -70,24 +70,42 @@ export class Dashboard {
   showPatients() {
     if (this.showPatient == false) {
       this.showPatient = true;
+      this.showAppointment = false;
+      this.showDoctor = false;
+      document.getElementById("patient-nav")!.style.backgroundColor = "#ff5722";
+      document.getElementById("appointment-nav")!.style.backgroundColor = "transparent";
+      document.getElementById("doctor-nav")!.style.backgroundColor = "transparent";
     } else if (this.showPatient == true) {
       this.showPatient = false;
+      document.getElementById("patient-nav")!.style.backgroundColor = "transparent";
     }
   }
 
   showDoctors() {
     if (this.showDoctor == false) {
       this.showDoctor = true;
+      this.showPatient = false;
+      this.showAppointment = false;
+      document.getElementById("doctor-nav")!.style.backgroundColor = "#ff5722";
+      document.getElementById("appointment-nav")!.style.backgroundColor = "transparent";
+      document.getElementById("patient-nav")!.style.backgroundColor = "transparent";
     } else if (this.showDoctor == true) {
       this.showDoctor = false;
+      document.getElementById("doctor-nav")!.style.backgroundColor = "transparent";
     }
   }
 
   showAppointments() {
     if (this.showAppointment == false) {
       this.showAppointment = true;
+      this.showPatient = false;
+      this.showDoctor = false;
+      document.getElementById("appointment-nav")!.style.backgroundColor = "#ff5722";
+      document.getElementById("patient-nav")!.style.backgroundColor = "transparent";
+      document.getElementById("doctor-nav")!.style.backgroundColor = "transparent";
     } else if (this.showAppointment == true) {
       this.showAppointment = false;
+      document.getElementById("appointment-nav")!.style.backgroundColor = "transparent";
     }
   }
 
@@ -99,12 +117,12 @@ export class Dashboard {
   }
 
   ngOnInit() {
-    this.router.events.subscribe(evt => {
-      if (evt instanceof NavigationStart && evt.navigationTrigger === 'popstate') {
-        this.logout();
-        this.router.navigate(['/login']);
-      }
-    })
+    // this.router.events.subscribe(evt => {
+    //   if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
+    //     this.logout();
+    //     this.router.navigate(['/login']);
+    //   }
+    // })
   }
 
 }

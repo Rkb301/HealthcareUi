@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, inject, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -9,6 +9,9 @@ import { NavigationStart, Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { HttpClient, HttpHandler } from '@angular/common/http';
+import { CurrentAppointmentsDTO } from '../../models/CurrentAppointmentsDTO';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-doctor-home',
@@ -26,110 +29,47 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
   styleUrl: './doctor-home.scss'
 })
 export class DoctorHome {
-  constructor (private router: Router) {}
+  constructor(private router: Router) { }
+  private http = inject(HttpClient);
 
-  displayedColumns = [
+  displayedColumns: string[] = [
+    'appointmentID',
+    'date',
+    'patientName',
+    'reason',
+    'status',
+    'dob',
+    'gender',
+    'contact',
+    'medicalHistory',
+    'allergies',
+    'currentMedications',
+    'notes',
+  ];
 
-  ]
+  baseUrl = "http://localhost:5122/api/doctor"
 
-  dataSource = new MatTableDataSource();
+  dataSource = new MatTableDataSource<CurrentAppointmentsDTO>([]);
 
-  ngOnInit() {
-    this.router.events.subscribe(evt => {
-      if (evt instanceof NavigationStart && evt.navigationTrigger === 'popstate') {
-        this.logout();
-        this.router.navigate(['/login']);
-      }
-    })
+  ngOnInit(): void {
+    this.loadAppointments();
+  }
 
-    this.dataSource.data = [
-      {
-        AppointmentID: 101,
-        PatientID: 201,
-        DoctorID: 301,
-        AppointmentDate: '2025-07-10T09:30:00',
-        Reason: 'Routine Checkup',
-        Status: 'Scheduled',
-        Notes: 'Patient requested blood pressure check.',
-        PatientFirstName: 'John',
-        PatientLastName: 'Doe',
-        PatientDateOfBirth: '1985-04-15',
-        PatientGender: 'Male',
-        PatientContactNumber: '+1-555-1234',
-        PatientMedicalHistory: 'Hypertension',
-        PatientAllergies: 'Penicillin',
-        PatientCurrentMedications: 'Lisinopril'
-      },
-      {
-        AppointmentID: 102,
-        PatientID: 202,
-        DoctorID: 301,
-        AppointmentDate: '2025-07-10T10:15:00',
-        Reason: 'Follow-up Visit',
-        Status: 'Completed',
-        Notes: 'Discussed lab results; all within normal range.',
-        PatientFirstName: 'Mary',
-        PatientLastName: 'Smith',
-        PatientDateOfBirth: '1990-11-22',
-        PatientGender: 'Female',
-        PatientContactNumber: '+1-555-5678',
-        PatientMedicalHistory: 'Asthma',
-        PatientAllergies: 'None',
-        PatientCurrentMedications: 'Albuterol'
-      },
-      {
-        AppointmentID: 103,
-        PatientID: 203,
-        DoctorID: 302,
-        AppointmentDate: '2025-07-10T11:00:00',
-        Reason: 'New Patient Consultation',
-        Status: 'Scheduled',
-        Notes: 'Initial consult for knee pain.',
-        PatientFirstName: 'Carlos',
-        PatientLastName: 'Garcia',
-        PatientDateOfBirth: '1978-02-05',
-        PatientGender: 'Male',
-        PatientContactNumber: '+1-555-9012',
-        PatientMedicalHistory: 'None',
-        PatientAllergies: 'Latex',
-        PatientCurrentMedications: 'None'
-      },
-      {
-        AppointmentID: 104,
-        PatientID: 204,
-        DoctorID: 301,
-        AppointmentDate: '2025-07-10T13:30:00',
-        Reason: 'Prescription Refill',
-        Status: 'Cancelled',
-        Notes: 'Patient cancelled due to travel.',
-        PatientFirstName: 'Anita',
-        PatientLastName: 'Kapoor',
-        PatientDateOfBirth: '1965-07-30',
-        PatientGender: 'Female',
-        PatientContactNumber: '+1-555-3456',
-        PatientMedicalHistory: 'Diabetes Type II',
-        PatientAllergies: 'Sulfa Drugs',
-        PatientCurrentMedications: 'Metformin'
-      },
-      {
-        AppointmentID: 105,
-        PatientID: 205,
-        DoctorID: 302,
-        AppointmentDate: '2025-07-10T14:15:00',
-        Reason: 'Lab Work Review',
-        Status: 'Scheduled',
-        Notes: 'Review cholesterol panel.',
-        PatientFirstName: 'Wei',
-        PatientLastName: 'Zhang',
-        PatientDateOfBirth: '1982-09-10',
-        PatientGender: 'Female',
-        PatientContactNumber: '+1-555-7890',
-        PatientMedicalHistory: 'High Cholesterol',
-        PatientAllergies: 'None',
-        PatientCurrentMedications: 'Atorvastatin'
-      }
-    ];
+  private loadAppointments(doctorId?: number, statusFilter?: string): void {
+    const params: any = {};
+    if (doctorId != null)    params.doctorId     = doctorId;
+    if (statusFilter)        params.statusFilter = statusFilter;
 
+    this.http
+      .get<CurrentAppointmentsDTO[]>(`${this.baseUrl}/proc`, { params })
+      .subscribe({
+        next: appointments => {
+          this.dataSource.data = appointments;
+        },
+        error: err => {
+          Swal.fire('Error', err || 'Failed data fetch', 'error')
+        }
+      });
   }
 
   logout() {

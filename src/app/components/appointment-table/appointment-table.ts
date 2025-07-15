@@ -103,7 +103,7 @@ export class AppointmentTable implements AfterViewInit, OnDestroy {
       { key: 'notes',     label: 'Notes',    type: 'text' },
     ];
     const html = fields.map(f => `
-      <label>${f.label}</label>
+      <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
       <input id="${f.key}" type="${f.type}" class="swal2-input">
     `).join('');
     Swal.fire({
@@ -142,7 +142,7 @@ export class AppointmentTable implements AfterViewInit, OnDestroy {
       { key: 'notes',     label: 'Notes',  type: 'text', value: row.notes }
     ];
     const html = fields.map(f => `
-      <label>${f.label}</label>
+      <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
       <input id="${f.key}" type="${f.type}" class="swal2-input" value="${f.value||''}">
     `).join('');
     Swal.fire({

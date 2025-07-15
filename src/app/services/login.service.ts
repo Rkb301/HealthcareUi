@@ -40,8 +40,14 @@ export class LoginService {
     password: string,
     role:     string
   ): Promise<void> {
+    const nameRegex = /^[a-zA-Z ]*$/;
+
     if (!email.includes('@')) {
       throw new Error('Please enter a valid email address');
+    }
+
+    if (!nameRegex.test(username)) {
+      throw new Error('Invalid Name');
     }
 
     const response = await fetch(`${this.url}register`, {

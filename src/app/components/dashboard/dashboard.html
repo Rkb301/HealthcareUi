@@ -2,13 +2,13 @@
   <mat-sidenav-container class="dashboard-container">
     <mat-sidenav class="sidebar" #sidenav mode="side" opened>
       <mat-nav-list>
-        <a class="nav-item" mat-list-item routerLink="patients" (click)="showPatients()" >
+        <a class="nav-item" mat-list-item routerLink="patients" id="patient-nav" (click)="showPatients()" >
           <span>Patients</span>
         </a>
-        <a class="nav-item" mat-list-item routerLink="doctors" (click)="showDoctors()" >
+        <a class="nav-item" mat-list-item routerLink="doctors" id="doctor-nav" (click)="showDoctors()" >
           <span>Doctors</span>
         </a>
-        <a class="nav-item" mat-list-item routerLink="appointments" (click)="showAppointments()" >
+        <a class="nav-item" mat-list-item routerLink="appointments" id="appointment-nav" (click)="showAppointments()" >
           <span>Appointments</span>
         </a>
       </mat-nav-list>
