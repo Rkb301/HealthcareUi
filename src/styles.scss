@@ -21,7 +21,7 @@ html {
     ),
     typography: (
       plain-family: Roboto,
-      brand-family: 'Roboto Slab',
+      brand-family: 'Roboto',
       regular-weight: 400,
       medium-weight: 500,
       bold-weight: 700,
@@ -83,9 +83,9 @@ html, body {
 }
 
 body {
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: var(--mat-sys-background);
-  color: var(--mat-sys-on-background);
+  font-family: Inter, "Roboto", sans-serif;
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -105,7 +105,7 @@ body {
    Healthcare Data Tables (Enhanced for Medical Records)
    ──────────────────────────────────────────────── */
 
-.patient-table-container,
+.table-container,
 .doctor-table-container,
 .appointment-table-container {
   background: var(--mat-sys-surface-container);
@@ -117,48 +117,9 @@ body {
   border: 1px solid var(--mat-sys-outline-variant);
 }
 
-/* Table headers with healthcare-appropriate contrast */
-.patient-table-container .tabulator-header,
-.doctor-table-container .tabulator-header,
-.appointment-table-container .tabulator-header {
-  background-color: var(--mat-sys-primary);
-  color: var(--mat-sys-on-primary);
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.025rem;
-}
-
-.patient-table-container .tabulator-col-title,
-.doctor-table-container .tabulator-col-title,
-.appointment-table-container .tabulator-col-title {
-  color: var(--mat-sys-on-primary);
-  font-weight: 600;
-}
-
-/* Row styling for medical data readability */
-.patient-table-container .tabulator-row:nth-child(even),
-.doctor-table-container .tabulator-row:nth-child(even),
-.appointment-table-container .tabulator-row:nth-child(even) {
-  background-color: var(--mat-sys-surface-container-low);
-}
-
-.patient-table-container .tabulator-row:nth-child(odd),
-.doctor-table-container .tabulator-row:nth-child(odd),
-.appointment-table-container .tabulator-row:nth-child(odd) {
-  background-color: var(--mat-sys-surface);
-}
-
-.patient-table-container .tabulator-row:hover,
-.doctor-table-container .tabulator-row:hover,
-.appointment-table-container .tabulator-row:hover {
-  background-color: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
-}
 
 /* Enhanced search functionality for healthcare data */
-.patient-table-container .search-bar,
-.doctor-table-container .search-bar,
-.appointment-table-container .search-bar {
+.table-container .search-bar {
   background: var(--mat-sys-surface-container-high);
   padding: 1rem;
   border-radius: var(--mat-sys-corner-medium);
@@ -166,22 +127,16 @@ body {
   border: 1px solid var(--mat-sys-outline-variant);
 }
 
-.patient-table-container .search-bar .mat-form-field,
-.doctor-table-container .search-bar .mat-form-field,
-.appointment-table-container .search-bar .mat-form-field {
+.table-container .search-bar .mat-form-field {
   width: 100%;
 }
 
-.patient-table-container .search-bar input,
-.doctor-table-container .search-bar input,
-.appointment-table-container .search-bar input {
+.table-container .search-bar input{
   color: var(--mat-sys-on-surface);
   background-color: var(--mat-sys-surface);
 }
 
-.patient-table-container .search-bar button,
-.doctor-table-container .search-bar button,
-.appointment-table-container .search-bar button {
+.table-container .search-bar button {
   min-height: 40px;
   color: var(--mat-sys-primary);
 }
@@ -254,6 +209,7 @@ mat-sidenav.sidebar {
     font-size: 1rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    width: 90%;
 
     &:hover {
       background-color: var(--mat-sys-error-container);
@@ -269,7 +225,7 @@ mat-card.present-appointments-card {
   max-width: 1450px;
   background: var(--mat-sys-surface-container);
   border: 1px solid var(--mat-sys-outline-variant);
-  box-shadow: var(--mat-sys-level2);
+  box-shadow: var(--mat-sys-level1);
   border-radius: var(--mat-sys-corner-large);
 
   mat-card-header {
@@ -294,7 +250,7 @@ mat-card.present-appointments-card {
     height: calc(100% - 80px);
 
     .table-container {
-      height: 100%;
+      height: 300px;
       overflow-y: auto;
       overflow-x: hidden;
       padding-right: 4px;
@@ -438,9 +394,7 @@ mat-card.present-appointments-card {
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .patient-table-container,
-  .doctor-table-container,
-  .appointment-table-container {
+  .table-container {
     border: 2px solid var(--mat-sys-outline);
   }
 
@@ -457,9 +411,7 @@ mat-card.present-appointments-card {
     color: black !important;
   }
 
-  .patient-table-container,
-  .doctor-table-container,
-  .appointment-table-container {
+  .table-container {
     box-shadow: none !important;
     border: 1px solid #000 !important;
   }
