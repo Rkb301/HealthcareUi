@@ -12,6 +12,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { HttpClient, HttpHandler } from '@angular/common/http';
 import { CurrentAppointmentsDTO } from '../../models/CurrentAppointmentsDTO';
 import { MatExpansionModule } from '@angular/material/expansion'
+import { MatTabsModule } from '@angular/material/tabs'
 import Swal from 'sweetalert2';
 
 @Component({
@@ -25,7 +26,8 @@ import Swal from 'sweetalert2';
     MatButtonModule,
     MatCardModule,
     MatTableModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTabsModule
   ],
   templateUrl: './doctor-home.html',
   styleUrl: './doctor-home.scss'

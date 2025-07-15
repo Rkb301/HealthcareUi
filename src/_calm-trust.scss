@@ -1,0 +1,21 @@
+@use '@angular/material' as mat;
+
+$base: (
+  primary: #00695C,
+  tertiary: #FFB300,
+  neutral:  #F5F7F7
+);
+
+@include mat.theme((
+  color: (
+    primary: map.get($base, primary),
+    tertiary: map.get($base, tertiary),
+  ),
+));
+
+body[data-theme='calm']{
+  --app-primary:  #00695C;
+  --app-primary-container:#84D5C5;
+  --app-accent:   #FFB300;
+  --app-bg:       #F5F7F7;
+}

@@ -1,6 +1,6 @@
 /* ────────────────────────────────────────────────
    Healthcare Application - Material 3 Theme
-   Based on Angular.love guide for proper M3 implementation
+   Bright & Patient-Friendly Color Implementation
    ──────────────────────────────────────────────── */
 
 @use '@angular/material' as mat;
@@ -20,11 +20,11 @@ html {
       tertiary: theme.$tertiary-palette,
     ),
     typography: (
-      plain-family: Roboto,
-      brand-family: 'Roboto',
+      plain-family: 'Inter, Roboto',
+      brand-family: 'Inter',
       regular-weight: 400,
       medium-weight: 500,
-      bold-weight: 700,
+      bold-weight: 600,
     ),
     density: 0,
   ));
@@ -43,11 +43,11 @@ html {
         theme-type: dark,
       ),
       typography: (
-        plain-family: Roboto,
-        brand-family: 'Roboto Slab',
+        plain-family: 'Inter, Roboto',
+        brand-family: 'Inter',
         regular-weight: 400,
         medium-weight: 500,
-        bold-weight: 700,
+        bold-weight: 600,
       ),
       density: 0,
     ));
@@ -65,8 +65,8 @@ body.dark-mode {
       theme-type: dark,
     ),
     typography: (
-      plain-family: Roboto,
-      brand-family: 'Roboto Slab',
+      plain-family: 'Inter, Roboto',
+      brand-family: 'Inter',
     ),
     density: 0,
   ));
@@ -83,12 +83,13 @@ html, body {
 }
 
 body {
-  font-family: Inter, "Roboto", sans-serif;
-  background-color: var(--mat-sys-surface-container);
-  color: var(--mat-sys-on-surface);
-  line-height: 1.5;
+  font-family: 'Inter', Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
 }
 
 /* ────────────────────────────────────────────────
@@ -105,7 +106,7 @@ body {
    Healthcare Data Tables (Enhanced for Medical Records)
    ──────────────────────────────────────────────── */
 
-.table-container,
+.patient-table-container,
 .doctor-table-container,
 .appointment-table-container {
   background: var(--mat-sys-surface-container);
@@ -117,9 +118,48 @@ body {
   border: 1px solid var(--mat-sys-outline-variant);
 }
 
+/* Table headers with healthcare-appropriate contrast */
+.patient-table-container .tabulator-header,
+.doctor-table-container .tabulator-header,
+.appointment-table-container .tabulator-header {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.025rem;
+}
+
+.patient-table-container .tabulator-col-title,
+.doctor-table-container .tabulator-col-title,
+.appointment-table-container .tabulator-col-title {
+  color: var(--mat-sys-on-primary);
+  font-weight: 600;
+}
+
+/* Row styling for medical data readability */
+.patient-table-container .tabulator-row:nth-child(even),
+.doctor-table-container .tabulator-row:nth-child(even),
+.appointment-table-container .tabulator-row:nth-child(even) {
+  background-color: var(--mat-sys-surface-container-low);
+}
+
+.patient-table-container .tabulator-row:nth-child(odd),
+.doctor-table-container .tabulator-row:nth-child(odd),
+.appointment-table-container .tabulator-row:nth-child(odd) {
+  background-color: var(--mat-sys-surface);
+}
+
+.patient-table-container .tabulator-row:hover,
+.doctor-table-container .tabulator-row:hover,
+.appointment-table-container .tabulator-row:hover {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
 
 /* Enhanced search functionality for healthcare data */
-.table-container .search-bar {
+.patient-table-container .search-bar,
+.doctor-table-container .search-bar,
+.appointment-table-container .search-bar {
   background: var(--mat-sys-surface-container-high);
   padding: 1rem;
   border-radius: var(--mat-sys-corner-medium);
@@ -127,16 +167,22 @@ body {
   border: 1px solid var(--mat-sys-outline-variant);
 }
 
-.table-container .search-bar .mat-form-field {
+.patient-table-container .search-bar .mat-form-field,
+.doctor-table-container .search-bar .mat-form-field,
+.appointment-table-container .search-bar .mat-form-field {
   width: 100%;
 }
 
-.table-container .search-bar input{
+.patient-table-container .search-bar input,
+.doctor-table-container .search-bar input,
+.appointment-table-container .search-bar input {
   color: var(--mat-sys-on-surface);
   background-color: var(--mat-sys-surface);
 }
 
-.table-container .search-bar button {
+.patient-table-container .search-bar button,
+.doctor-table-container .search-bar button,
+.appointment-table-container .search-bar button {
   min-height: 40px;
   color: var(--mat-sys-primary);
 }
@@ -153,6 +199,7 @@ body {
 
   span {
     color: var(--mat-sys-on-primary);
+    font-weight: 500;
   }
 
   .account {
@@ -175,6 +222,7 @@ mat-sidenav.sidebar {
     margin: 0.25rem 0.5rem;
     border-radius: var(--mat-sys-corner-small);
     transition: all 0.2s ease;
+    font-weight: 500;
 
     span {
       color: var(--mat-sys-on-surface);
@@ -210,6 +258,7 @@ mat-sidenav.sidebar {
     font-weight: 500;
     transition: all 0.2s ease;
     width: 90%;
+    border-radius: var(--mat-sys-corner-small);
 
     &:hover {
       background-color: var(--mat-sys-error-container);
@@ -225,7 +274,7 @@ mat-card.present-appointments-card {
   max-width: 1450px;
   background: var(--mat-sys-surface-container);
   border: 1px solid var(--mat-sys-outline-variant);
-  box-shadow: var(--mat-sys-level1);
+  box-shadow: var(--mat-sys-level2);
   border-radius: var(--mat-sys-corner-large);
 
   mat-card-header {
@@ -250,7 +299,7 @@ mat-card.present-appointments-card {
     height: calc(100% - 80px);
 
     .table-container {
-      height: 300px;
+      height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
       padding-right: 4px;
@@ -276,7 +325,7 @@ mat-card.present-appointments-card {
 }
 
 /* ────────────────────────────────────────────────
-   Angular Material Table Styling (Using :host ::ng-deep)
+   Angular Material Table Styling (Using ::ng-deep)
    ──────────────────────────────────────────────── */
 
 :host ::ng-deep {
@@ -356,6 +405,21 @@ mat-card.present-appointments-card {
 }
 
 /* ────────────────────────────────────────────────
+   Enhanced Button Styling
+   ──────────────────────────────────────────────── */
+
+.mat-mdc-raised-button {
+  font-weight: 500;
+  letter-spacing: 0.025rem;
+  border-radius: var(--mat-sys-corner-small);
+}
+
+.mat-mdc-button {
+  font-weight: 500;
+  letter-spacing: 0.025rem;
+}
+
+/* ────────────────────────────────────────────────
    Responsive Design
    ──────────────────────────────────────────────── */
 
@@ -394,7 +458,9 @@ mat-card.present-appointments-card {
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .table-container {
+  .patient-table-container,
+  .doctor-table-container,
+  .appointment-table-container {
     border: 2px solid var(--mat-sys-outline);
   }
 
@@ -411,7 +477,9 @@ mat-card.present-appointments-card {
     color: black !important;
   }
 
-  .table-container {
+  .patient-table-container,
+  .doctor-table-container,
+  .appointment-table-container {
     box-shadow: none !important;
     border: 1px solid #000 !important;
   }

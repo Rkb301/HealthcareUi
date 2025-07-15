@@ -1,5 +1,6 @@
 /* ─────────────────────────────────────────
    Doctor Home Component - Top + 3 Side Layout
+   Enhanced with Bright Healthcare Colors
    ─────────────────────────────────────────── */
 
 :host {
@@ -26,6 +27,7 @@
 
   span {
     color: var(--mat-sys-on-primary);
+    font-weight: 500;
   }
 
   .account {
@@ -48,6 +50,7 @@ mat-sidenav.sidebar {
     margin: 0.25rem 0.5rem;
     border-radius: var(--mat-sys-corner-small);
     transition: all 0.2s ease;
+    font-weight: 500;
 
     span {
       color: var(--mat-sys-on-surface);
@@ -82,6 +85,7 @@ mat-sidenav.sidebar {
     font-size: 1rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    border-radius: var(--mat-sys-corner-small);
 
     &:hover {
       background-color: var(--mat-sys-error-container);
@@ -387,3 +391,4 @@ mat-sidenav.sidebar {
     display: none !important;
   }
 }
+
