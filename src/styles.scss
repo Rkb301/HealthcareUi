@@ -489,3 +489,27 @@ mat-card.present-appointments-card {
     display: none !important;
   }
 }
+
+/* Ensure all dialogs use your theme’s surface background */
+.mat-mdc-dialog-container {
+  background-color: var(--mat-sys-surface-container) !important;
+  color: var(--mat-sys-on-surface) !important;
+  box-shadow: var(--mat-sys-level4) !important;
+  border-radius: var(--mat-sys-corner-large) !important;
+}
+
+/* Optional: add padding inside the dialog */
+.mat-mdc-dialog-content, .mat-mdc-dialog-actions {
+  padding: 1.5rem;
+}
+
+/* If your dialog is still somewhat transparent, force full opacity */
+.mat-mdc-dialog-container {
+  opacity: 1 !important;
+}
+
+/* Example: if you want a slight elevation effect */
+.mat-mdc-dialog-container {
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+

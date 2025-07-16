@@ -1,31 +1,46 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import Swal from 'sweetalert2';
+import { PatientDetailsService } from './patient-details.service';
+import { DoctorDetailsService } from './doctor-details.service';
 
-export interface LoginResponse {
-  accessToken: string;
-  expiryTime: string;
-}
+// export interface LoginResponse {
+//   accessToken: string;
+//   expiryTime: string;
+// }
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
-  private url = 'http://localhost:5122/api/auth/';
+  private authUrl = 'http://localhost:5122/api/auth';
+  private baseUrl = 'http://localhost:5122/api'
   private token = '';
+  private role = '';
+  private patientService = inject(PatientDetailsService);
+  private doctorService = inject(DoctorDetailsService);
 
   // Retrieve stored token
   getToken(): string {
     return this.token;
   }
 
+  getRole(): string {
+    return this.role;
+  }
+
   // Sign In
   async signIn(email: string, password: string): Promise<void> {
-    const response = await fetch(`${this.url}login`, {
+    const response = await fetch(`${this.authUrl}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ Email: email, Password: password })
     });
 
     if (response.ok) {
-      this.token = await response.text();
+      await response.text()
+        .then((data) => {
+          const obj = JSON.parse(data);
+          this.token = obj.accessToken;
+          this.role = obj.role;
+      })
     } else if (response.status === 401) {
       throw new Error('Invalid login details');
     } else {
@@ -50,7 +65,7 @@ export class LoginService {
       throw new Error('Invalid Name');
     }
 
-    const response = await fetch(`${this.url}register`, {
+    const response = await fetch(`${this.authUrl}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password, role })
@@ -59,6 +74,17 @@ export class LoginService {
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || 'Registration failed');
+    }
+  }
+
+  async getDetails() {
+    switch (this.role) {
+      case 'Patient':
+        const response = await fetch(`${this.baseUrl}/patient/search-lucene`)
+        break;
+
+      default:
+        break;
     }
   }
 }

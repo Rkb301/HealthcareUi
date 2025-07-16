@@ -1,5 +1,6 @@
+import { Specialization } from './../book-appointment-dialog/book-appointment-dialog';
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -13,6 +14,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
+import { FormBuilder, Validators } from '@angular/forms';
+import { MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogModule } from '@angular/material/dialog'
+import { BookAppointmentDialog } from '../book-appointment-dialog/book-appointment-dialog';
 
 // Models
 interface PatientAppointment {
@@ -76,14 +80,18 @@ interface Notification {
     MatTableModule,
     MatTabsModule,
     MatBadgeModule,
-    MatChipsModule
+    MatChipsModule,
+    MatDialogModule
   ],
   templateUrl: './patient-home.html',
   styleUrl: './patient-home.scss'
 })
 export class PatientHome implements OnInit {
-  constructor(private router: Router) {}
-  private http = inject(HttpClient);
+  constructor(
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
+  private readonly http = inject(HttpClient);
 
   // Data sources
   upcomingAppointments: PatientAppointment[] = [];
@@ -100,6 +108,16 @@ export class PatientHome implements OnInit {
   prescriptionColumns: string[] = ['medicationName', 'dosage', 'frequency', 'refillsRemaining', 'actions'];
   labResultColumns: string[] = ['testName', 'result', 'normalRange', 'date', 'status'];
 
+
+  specialistOptions: Specialization[] = [
+    { id: 1, specialization: 'Cardiology' },
+    { id: 2, specialization: 'Dermatology' },
+    { id: 3, specialization: 'General Medicine' },
+    { id: 4, specialization: 'Neurology' },
+    { id: 5, specialization: 'Orthopedics' },
+    { id: 6, specialization: 'Pediatrics' },
+  ]
+
   // Data sources for tables
   appointmentDataSource = new MatTableDataSource<PatientAppointment>([]);
   prescriptionDataSource = new MatTableDataSource<Prescription>([]);
@@ -109,12 +127,14 @@ export class PatientHome implements OnInit {
     this.loadPatientData();
   }
 
+
+
   private loadPatientData(): void {
     this.loadUpcomingAppointments();
-    this.loadActivePrescriptions();
-    this.loadRecentLabResults();
-    this.loadPrimaryDoctor();
-    this.loadNotifications();
+    // this.loadActivePrescriptions();
+    // this.loadRecentLabResults();
+    // this.loadPrimaryDoctor();
+    // this.loadNotifications();
   }
 
   // Load upcoming appointments
@@ -127,7 +147,7 @@ export class PatientHome implements OnInit {
         },
         error: err => {
           console.error('Error loading appointments:', err);
-          // Mock data for development
+          // Mock data
           this.upcomingAppointments = [
             {
               appointmentID: 1,
@@ -152,141 +172,150 @@ export class PatientHome implements OnInit {
   }
 
   // Load active prescriptions
-  private loadActivePrescriptions(): void {
-    this.http.get<Prescription[]>(`${this.baseUrl}/prescriptions/active`)
-      .subscribe({
-        next: prescriptions => {
-          this.activePrescriptions = prescriptions;
-          this.prescriptionDataSource.data = prescriptions;
-        },
-        error: err => {
-          console.error('Error loading prescriptions:', err);
-          // Mock data for development
-          this.activePrescriptions = [
-            {
-              prescriptionID: 1,
-              medicationName: 'Lisinopril',
-              dosage: '10mg',
-              frequency: 'Once daily',
-              startDate: '2025-01-01',
-              endDate: '2025-04-01',
-              refillsRemaining: 2,
-              status: 'Active'
-            },
-            {
-              prescriptionID: 2,
-              medicationName: 'Metformin',
-              dosage: '500mg',
-              frequency: 'Twice daily',
-              startDate: '2025-01-01',
-              endDate: '2025-06-01',
-              refillsRemaining: 0,
-              status: 'Refill Needed'
-            }
-          ];
-          this.prescriptionDataSource.data = this.activePrescriptions;
-        }
-      });
-  }
+  // private loadActivePrescriptions(): void {
+  //   this.http.get<Prescription[]>(`${this.baseUrl}/prescriptions/active`)
+  //     .subscribe({
+  //       next: prescriptions => {
+  //         this.activePrescriptions = prescriptions;
+  //         this.prescriptionDataSource.data = prescriptions;
+  //       },
+  //       error: err => {
+  //         console.error('Error loading prescriptions:', err);
+  //         // Mock data for development
+  //         this.activePrescriptions = [
+  //           {
+  //             prescriptionID: 1,
+  //             medicationName: 'Lisinopril',
+  //             dosage: '10mg',
+  //             frequency: 'Once daily',
+  //             startDate: '2025-01-01',
+  //             endDate: '2025-04-01',
+  //             refillsRemaining: 2,
+  //             status: 'Active'
+  //           },
+  //           {
+  //             prescriptionID: 2,
+  //             medicationName: 'Metformin',
+  //             dosage: '500mg',
+  //             frequency: 'Twice daily',
+  //             startDate: '2025-01-01',
+  //             endDate: '2025-06-01',
+  //             refillsRemaining: 0,
+  //             status: 'Refill Needed'
+  //           }
+  //         ];
+  //         this.prescriptionDataSource.data = this.activePrescriptions;
+  //       }
+  //     });
+  // }
 
   // Load recent lab results
-  private loadRecentLabResults(): void {
-    this.http.get<LabResult[]>(`${this.baseUrl}/lab-results/recent`)
-      .subscribe({
-        next: results => {
-          this.recentLabResults = results;
-          this.labResultDataSource.data = results;
-        },
-        error: err => {
-          console.error('Error loading lab results:', err);
-          // Mock data for development
-          this.recentLabResults = [
-            {
-              labID: 1,
-              testName: 'Blood Glucose',
-              result: '95 mg/dL',
-              normalRange: '70-100 mg/dL',
-              date: '2025-01-10',
-              status: 'Normal'
-            },
-            {
-              labID: 2,
-              testName: 'Cholesterol',
-              result: '220 mg/dL',
-              normalRange: '<200 mg/dL',
-              date: '2025-01-10',
-              status: 'High'
-            }
-          ];
-          this.labResultDataSource.data = this.recentLabResults;
-        }
-      });
-  }
+  // private loadRecentLabResults(): void {
+  //   this.http.get<LabResult[]>(`${this.baseUrl}/lab-results/recent`)
+  //     .subscribe({
+  //       next: results => {
+  //         this.recentLabResults = results;
+  //         this.labResultDataSource.data = results;
+  //       },
+  //       error: err => {
+  //         console.error('Error loading lab results:', err);
+  //         // Mock data
+  //         this.recentLabResults = [
+  //           {
+  //             labID: 1,
+  //             testName: 'Blood Glucose',
+  //             result: '95 mg/dL',
+  //             normalRange: '70-100 mg/dL',
+  //             date: '2025-01-10',
+  //             status: 'Normal'
+  //           },
+  //           {
+  //             labID: 2,
+  //             testName: 'Cholesterol',
+  //             result: '220 mg/dL',
+  //             normalRange: '<200 mg/dL',
+  //             date: '2025-01-10',
+  //             status: 'High'
+  //           }
+  //         ];
+  //         this.labResultDataSource.data = this.recentLabResults;
+  //       }
+  //     });
+  // }
 
   // Load primary doctor info
-  private loadPrimaryDoctor(): void {
-    this.http.get<Doctor>(`${this.baseUrl}/primary-doctor`)
-      .subscribe({
-        next: doctor => {
-          this.primaryDoctor = doctor;
-        },
-        error: err => {
-          console.error('Error loading primary doctor:', err);
-          // Mock data for development
-          this.primaryDoctor = {
-            doctorID: 1,
-            firstName: 'Dr. Sarah',
-            lastName: 'Smith',
-            specialty: 'Family Medicine',
-            officeHours: 'Mon-Fri 8:00 AM - 5:00 PM',
-            phone: '(555) 123-4567',
-            email: 'dr.smith@healthcare.com'
-          };
-        }
-      });
-  }
+  // private loadPrimaryDoctor(): void {
+  //   this.http.get<Doctor>(`${this.baseUrl}/primary-doctor`)
+  //     .subscribe({
+  //       next: doctor => {
+  //         this.primaryDoctor = doctor;
+  //       },
+  //       error: err => {
+  //         console.error('Error loading primary doctor:', err);
+  //         // Mock data
+  //         this.primaryDoctor = {
+  //           doctorID: 1,
+  //           firstName: 'Dr. Sarah',
+  //           lastName: 'Smith',
+  //           specialty: 'Family Medicine',
+  //           officeHours: 'Mon-Fri 8:00 AM - 5:00 PM',
+  //           phone: '(555) 123-4567',
+  //           email: 'dr.smith@healthcare.com'
+  //         };
+  //       }
+  //     });
+  // }
 
   // Load notifications
-  private loadNotifications(): void {
-    this.http.get<Notification[]>(`${this.baseUrl}/notifications`)
-      .subscribe({
-        next: notifications => {
-          this.notifications = notifications.filter(n => !n.dismissed);
-        },
-        error: err => {
-          console.error('Error loading notifications:', err);
-          // Mock data for development
-          this.notifications = [
-            {
-              notificationID: 1,
-              message: 'Annual physical exam due',
-              type: 'reminder',
-              date: '2025-01-15',
-              priority: 'medium',
-              dismissed: false
-            },
-            {
-              notificationID: 2,
-              message: 'Prescription refill needed for Metformin',
-              type: 'prescription',
-              date: '2025-01-16',
-              priority: 'high',
-              dismissed: false
-            }
-          ];
-        }
-      });
-  }
+  // private loadNotifications(): void {
+  //   this.http.get<Notification[]>(`${this.baseUrl}/notifications`)
+  //     .subscribe({
+  //       next: notifications => {
+  //         this.notifications = notifications.filter(n => !n.dismissed);
+  //       },
+  //       error: err => {
+  //         console.error('Error loading notifications:', err);
+  //         // Mock data
+  //         this.notifications = [
+  //           {
+  //             notificationID: 1,
+  //             message: 'Annual physical exam due',
+  //             type: 'reminder',
+  //             date: '2025-01-15',
+  //             priority: 'medium',
+  //             dismissed: false
+  //           },
+  //           {
+  //             notificationID: 2,
+  //             message: 'Prescription refill needed for Metformin',
+  //             type: 'prescription',
+  //             date: '2025-01-16',
+  //             priority: 'high',
+  //             dismissed: false
+  //           }
+  //         ];
+  //       }
+  //     });
+  // }
 
   // Action methods
   bookNewAppointment(): void {
-    // Placeholder for booking functionality
-    Swal.fire({
-      title: 'Book New Appointment',
-      text: 'Appointment booking functionality will be implemented here.',
-      icon: 'info',
-      confirmButtonText: 'OK'
+    const ref = this.dialog.open(BookAppointmentDialog, {
+      width: '400px',
+      data: this.specialistOptions
     });
+
+    ref.afterClosed()
+      .subscribe(result => {
+        // result = {specialization, doctor, date, reason}
+        if (result) {
+          this.createAppointment(result);
+      }
+    })
+  }
+
+  createAppointment(result: any) {
+
   }
 
   rescheduleAppointment(appointmentID: number): void {

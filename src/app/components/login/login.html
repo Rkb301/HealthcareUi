@@ -36,7 +36,6 @@
       <div class="error" *ngIf="signUpForm.get('signUpPassword')?.errors?.['minlength'] && signUpForm.get('signUpPassword')?.touched">
         Minimum 6 characters.
       </div>
-        <!-- Use the outer <form> only -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Role</mat-label>
           <mat-select formControlName="signUpRole">
