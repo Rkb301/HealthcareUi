@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import Swal from 'sweetalert2';
 import { PatientDetailsService } from './patient-details.service';
 import { DoctorDetailsService } from './doctor-details.service';
+import { AdminDetailsService } from './admin-details.service';
 
 // export interface LoginResponse {
 //   accessToken: string;
@@ -12,18 +13,39 @@ import { DoctorDetailsService } from './doctor-details.service';
 export class LoginService {
   private authUrl = 'http://localhost:5122/api/auth';
   private baseUrl = 'http://localhost:5122/api'
+
   private token = '';
+
   private role = '';
+  private userEmail = '';
+  private username = '';
+
+  private patientID = '';
+  private doctorID = '';
+  private adminID = '';
+
   private patientService = inject(PatientDetailsService);
   private doctorService = inject(DoctorDetailsService);
+  private adminService = inject(AdminDetailsService);
 
-  // Retrieve stored token
   getToken(): string {
     return this.token;
   }
 
   getRole(): string {
     return this.role;
+  }
+
+  getPatientID(): number {
+    return parseInt(this.patientID);
+  }
+
+  getDoctorID(): number {
+    return parseInt(this.doctorID);
+  }
+
+  getAdminID(): number {
+    return parseInt(this.adminID);
   }
 
   // Sign In
@@ -38,8 +60,14 @@ export class LoginService {
       await response.text()
         .then((data) => {
           const obj = JSON.parse(data);
-          this.token = obj.accessToken;
-          this.role = obj.role;
+          if (obj.isActive) {
+            this.token = obj.accessToken;
+            this.role = obj.role;
+            this.userEmail = obj.email;
+            this.username = obj.username;
+          } else {
+            throw new Error('Invalid login details');
+          }
       })
     } else if (response.status === 401) {
       throw new Error('Invalid login details');
@@ -77,13 +105,80 @@ export class LoginService {
     }
   }
 
+  async getUserDetails(role: string) {
+    const response = await
+      fetch(`${this.baseUrl}/user/search?username=${this.username}&email=${this.userEmail}`, {
+        method: "GET"
+      })
+    var id = 0;
+    if (response.ok) {
+      await response.text()
+        .then((data) => {
+          const obj = JSON.parse(data);
+          id = obj.data[0].userID;
+          // console.log('user ID:- ' + id);
+        })
+
+      if (role == 'Patient') {
+        await fetch(`${this.baseUrl}/patient/search?uid=${id}`, {
+          method: "GET"
+        }).then((response) => {
+          if (response.ok) {
+            response.text()
+              .then((data) => {
+                const obj = JSON.parse(data);
+                this.patientID = obj.data[0].patientID;
+                // console.log('patient id:- ' + this.patientID);
+                this.patientService.setUser(obj.data[0])
+            })
+          }
+        })
+      } else if (role == 'Doctor') {
+        await fetch(`${this.baseUrl}/doctor/search?uid=${id}`, {
+          method: "GET"
+        }).then((response) => {
+          if (response.ok) {
+            response.text()
+              .then((data) => {
+                const obj = JSON.parse(data);
+                this.doctorID = obj.data[0].doctorID;
+                // console.log('doctor ID:- ' + this.doctorID);
+                this.doctorService.setUser(obj.data[0])
+            })
+          }
+        })
+      } else if (role == 'Admin') {
+        await fetch(`${this.baseUrl}/user/search?uid=${id}`, {
+          method: "GET"
+        }).then((response) => {
+          if (response.ok) {
+            response.text()
+              .then((data) => {
+                const obj = JSON.parse(data);
+                this.adminID = obj.data[0].userID;
+                // console.log('admin id:- ' + this.adminID);
+                this.doctorService.setUser(obj.data[0])
+            })
+          }
+        })
+      }
+    }
+  }
+
   async getDetails() {
     switch (this.role) {
       case 'Patient':
-        const response = await fetch(`${this.baseUrl}/patient/search-lucene`)
+        this.getUserDetails('Patient');
+        break;
+      case 'Doctor':
+        this.getUserDetails('Doctor');
+        break;
+      case 'Admin':
+        this.getUserDetails('Admin');
         break;
 
       default:
+        Swal.fire("Not Found", "User not found", "error");
         break;
     }
   }

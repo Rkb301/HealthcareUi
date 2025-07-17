@@ -60,6 +60,7 @@ export class Login {
     this.loginService
       .signIn(loginEmail!, loginPassword!)
       .then(() => {
+        this.loginService.getDetails();
         this.router.navigate(['/dashboard']);
       })
       .catch(err => {

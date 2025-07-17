@@ -20,12 +20,11 @@ import { BookAppointmentDialog } from '../book-appointment-dialog/book-appointme
 
 // Models
 interface PatientAppointment {
-  appointmentID: number;
   date: string;
-  doctorName: string;
+  time: string;
+  doctor: string;
   reason: string;
   status: string;
-  time: string;
 }
 
 interface Prescription {
@@ -104,7 +103,7 @@ export class PatientHome implements OnInit {
   baseUrl = "http://localhost:5122/api/patient";
 
   // Display columns for tables
-  appointmentColumns: string[] = ['date', 'time', 'doctorName', 'reason', 'status', 'actions'];
+  appointmentColumns: string[] = ['date', 'time', 'doctor', 'reason', 'status', 'actions'];
   prescriptionColumns: string[] = ['medicationName', 'dosage', 'frequency', 'refillsRemaining', 'actions'];
   labResultColumns: string[] = ['testName', 'result', 'normalRange', 'date', 'status'];
 
@@ -139,37 +138,17 @@ export class PatientHome implements OnInit {
 
   // Load upcoming appointments
   private loadUpcomingAppointments(): void {
-    this.http.get<PatientAppointment[]>(`${this.baseUrl}/appointments/upcoming`)
+    this.http.get<PatientAppointment[]>(`${this.baseUrl}/proc`)
       .subscribe({
-        next: appointments => {
-          this.upcomingAppointments = appointments;
-          this.appointmentDataSource.data = appointments;
+        next: (response) => {
+          this.upcomingAppointments = response;
+          this.appointmentDataSource.data = response;
         },
-        error: err => {
-          console.error('Error loading appointments:', err);
-          // Mock data
-          this.upcomingAppointments = [
-            {
-              appointmentID: 1,
-              date: '2025-01-20',
-              time: '10:00 AM',
-              doctorName: 'Dr. Smith',
-              reason: 'Regular Checkup',
-              status: 'Confirmed'
-            },
-            {
-              appointmentID: 2,
-              date: '2025-01-25',
-              time: '2:30 PM',
-              doctorName: 'Dr. Johnson',
-              reason: 'Follow-up',
-              status: 'Pending'
-            }
-          ];
-          this.appointmentDataSource.data = this.upcomingAppointments;
+        error: (error) => {
+          Swal.fire("Error", "Could not load upcoming appointments", "error");
         }
-      });
-  }
+      })
+  };
 
   // Load active prescriptions
   // private loadActivePrescriptions(): void {

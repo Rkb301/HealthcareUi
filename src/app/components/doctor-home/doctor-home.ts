@@ -35,6 +35,7 @@ import Swal from 'sweetalert2';
 export class DoctorHome {
   constructor(private router: Router) { }
   private http = inject(HttpClient);
+  private loginService = inject(LoginService);
 
   displayedColumns: string[] = [
     'appointmentID',
@@ -56,7 +57,7 @@ export class DoctorHome {
   dataSource = new MatTableDataSource<CurrentAppointmentsDTO>([]);
 
   ngOnInit(): void {
-    this.loadAppointments();
+    this.loadAppointments(this.loginService.getDoctorID());
   }
 
   private loadAppointments(doctorId?: number, statusFilter?: string): void {
