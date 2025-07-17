@@ -108,7 +108,10 @@ export class LoginService {
   async getUserDetails(role: string) {
     const response = await
       fetch(`${this.baseUrl}/user/search?username=${this.username}&email=${this.userEmail}`, {
-        method: "GET"
+        method: "GET",
+        headers: {
+        'Authorization': `Bearer ${this.token}`
+        }
       })
     var id = 0;
     if (response.ok) {
@@ -121,7 +124,10 @@ export class LoginService {
 
       if (role == 'Patient') {
         await fetch(`${this.baseUrl}/patient/search?uid=${id}`, {
-          method: "GET"
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${this.token}`
+          }
         }).then((response) => {
           if (response.ok) {
             response.text()
@@ -135,7 +141,10 @@ export class LoginService {
         })
       } else if (role == 'Doctor') {
         await fetch(`${this.baseUrl}/doctor/search?uid=${id}`, {
-          method: "GET"
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${this.token}`
+          }
         }).then((response) => {
           if (response.ok) {
             response.text()
@@ -149,7 +158,10 @@ export class LoginService {
         })
       } else if (role == 'Admin') {
         await fetch(`${this.baseUrl}/user/search?uid=${id}`, {
-          method: "GET"
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${this.token}`
+          }
         }).then((response) => {
           if (response.ok) {
             response.text()
@@ -180,6 +192,15 @@ export class LoginService {
       default:
         Swal.fire("Not Found", "User not found", "error");
         break;
+    }
+  }
+
+  isLoggedIn() {
+    if (this.token == null) {
+      return false;
+    }
+    else {
+      return true;
     }
   }
 }
