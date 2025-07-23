@@ -80,6 +80,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -116,44 +117,6 @@ body {
   padding: 0.5rem;
   overflow: hidden;
   border: 1px solid var(--mat-sys-outline-variant);
-}
-
-/* Table headers with healthcare-appropriate contrast */
-.patient-table-container .tabulator-header,
-.doctor-table-container .tabulator-header,
-.appointment-table-container .tabulator-header {
-  background-color: var(--mat-sys-primary);
-  color: var(--mat-sys-on-primary);
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.025rem;
-}
-
-.patient-table-container .tabulator-col-title,
-.doctor-table-container .tabulator-col-title,
-.appointment-table-container .tabulator-col-title {
-  color: var(--mat-sys-on-primary);
-  font-weight: 600;
-}
-
-/* Row styling for medical data readability */
-.patient-table-container .tabulator-row:nth-child(even),
-.doctor-table-container .tabulator-row:nth-child(even),
-.appointment-table-container .tabulator-row:nth-child(even) {
-  background-color: var(--mat-sys-surface-container-low);
-}
-
-.patient-table-container .tabulator-row:nth-child(odd),
-.doctor-table-container .tabulator-row:nth-child(odd),
-.appointment-table-container .tabulator-row:nth-child(odd) {
-  background-color: var(--mat-sys-surface);
-}
-
-.patient-table-container .tabulator-row:hover,
-.doctor-table-container .tabulator-row:hover,
-.appointment-table-container .tabulator-row:hover {
-  background-color: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
 }
 
 /* Enhanced search functionality for healthcare data */
@@ -492,7 +455,7 @@ mat-card.present-appointments-card {
 
 /* Ensure all dialogs use your theme’s surface background */
 .mat-mdc-dialog-container {
-  background-color: var(--mat-sys-surface-container) !important;
+  background-color: var(--mat-sys-background) !important;
   color: var(--mat-sys-on-surface) !important;
   box-shadow: var(--mat-sys-level4) !important;
   border-radius: var(--mat-sys-corner-large) !important;

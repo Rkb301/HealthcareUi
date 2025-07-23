@@ -2,9 +2,9 @@
   <mat-sidenav-container class="dashboard-container">
     <mat-sidenav class="sidebar" #sidenav mode="side" closed>
       <mat-nav-list>
-        <a class="nav-item" mat-list-item routerLink="/patient-home">
+        <a class="nav-item" mat-list-item (click)="navToDashboard()">
           <mat-icon>home</mat-icon>
-          <span>Home</span>
+          <span>Dashboard</span>
         </a>
         <a class="nav-item" mat-list-item routerLink="">
           <mat-icon>event</mat-icon>

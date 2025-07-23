@@ -67,6 +67,14 @@ export class Dashboard {
     this.router.navigate(['/appointments'])
   }
 
+  navToPatientHome() {
+    this.router.navigate(['/patient'])
+  }
+
+  navToDoctorHome() {
+    this.router.navigate(['/doctor'])
+  }
+
   showPatients() {
     if (this.showPatient == false) {
       this.showPatient = true;
@@ -117,12 +125,12 @@ export class Dashboard {
   }
 
   ngOnInit() {
-    // this.router.events.subscribe(evt => {
-    //   if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
-    //     this.logout();
-    //     this.router.navigate(['/login']);
-    //   }
-    // })
+    this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
+        this.logout();
+        this.router.navigate(['/login']);
+      }
+    })
   }
 
 }

@@ -1,3 +1,4 @@
+import { AppointmentCreationDTO } from './../../models/appointment.model';
 import { Specialization } from './../book-appointment-dialog/book-appointment-dialog';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
@@ -11,12 +12,15 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatChipsModule } from '@angular/material/chips';
-import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { NavigationStart, Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import Swal from 'sweetalert2';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogModule } from '@angular/material/dialog'
 import { BookAppointmentDialog } from '../book-appointment-dialog/book-appointment-dialog';
+import { LoginService } from '../../services/login.service';
+import { Appointment } from '../../models/appointment.model';
+import { PatientDetailsService } from '../../services/patient-details.service';
 
 // Models
 interface PatientAppointment {
@@ -90,43 +94,53 @@ export class PatientHome implements OnInit {
     private router: Router,
     private dialog: MatDialog
   ) {}
-  private readonly http = inject(HttpClient);
 
-  // Data sources
+  private readonly http = inject(HttpClient);
+  private readonly loginService = inject(LoginService);
+  private readonly patientDetailsService = inject(PatientDetailsService);
+
+  // data sources
   upcomingAppointments: PatientAppointment[] = [];
   activePrescriptions: Prescription[] = [];
   recentLabResults: LabResult[] = [];
   primaryDoctor: Doctor | null = null;
   notifications: Notification[] = [];
 
-  // API endpoints
+  // API endpoints (more to be added as needed)
   baseUrl = "http://localhost:5122/api/patient";
+  appointmentUrl = "http://localhost:5122/api/appointment";
 
-  // Display columns for tables
+  // display columns for tables
   appointmentColumns: string[] = ['date', 'time', 'doctor', 'reason', 'status', 'actions'];
   prescriptionColumns: string[] = ['medicationName', 'dosage', 'frequency', 'refillsRemaining', 'actions'];
   labResultColumns: string[] = ['testName', 'result', 'normalRange', 'date', 'status'];
 
 
   specialistOptions: Specialization[] = [
-    { id: 1, specialization: 'Cardiology' },
-    { id: 2, specialization: 'Dermatology' },
-    { id: 3, specialization: 'General Medicine' },
-    { id: 4, specialization: 'Neurology' },
-    { id: 5, specialization: 'Orthopedics' },
-    { id: 6, specialization: 'Pediatrics' },
+    {specialization: 'Cardiology' },
+    {specialization: 'Dermatology' },
+    {specialization: 'General Medicine' },
+    {specialization: 'Neurology' },
+    {specialization: 'Orthopedics' },
+    {specialization: 'Pediatrics' },
   ]
 
-  // Data sources for tables
+  // data sources for tables
   appointmentDataSource = new MatTableDataSource<PatientAppointment>([]);
   prescriptionDataSource = new MatTableDataSource<Prescription>([]);
   labResultDataSource = new MatTableDataSource<LabResult>([]);
 
   ngOnInit(): void {
     this.loadPatientData();
+
+    // prevent entry into app via browser back button or forward
+    this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
+        this.logout();
+        this.router.navigate(['/login']);
+      }
+    })
   }
-
-
 
   private loadPatientData(): void {
     this.loadUpcomingAppointments();
@@ -136,148 +150,26 @@ export class PatientHome implements OnInit {
     // this.loadNotifications();
   }
 
-  // Load upcoming appointments
+  navToDashboard() {
+    this.router.navigate(['/dashboard'])
+  }
+
+  // load upcoming appointments
   private loadUpcomingAppointments(): void {
-    this.http.get<PatientAppointment[]>(`${this.baseUrl}/proc`)
+    const headers = {'Authorization': `Bearer ${this.loginService.getToken()}`}
+    this.http.get<PatientAppointment[]>(`${this.baseUrl}/proc`, {headers})
       .subscribe({
         next: (response) => {
           this.upcomingAppointments = response;
           this.appointmentDataSource.data = response;
         },
         error: (error) => {
-          Swal.fire("Error", "Could not load upcoming appointments", "error");
+          Swal.fire("Error", `Could not load upcoming appointments (${error.statusText})`, "error");
         }
       })
   };
 
-  // Load active prescriptions
-  // private loadActivePrescriptions(): void {
-  //   this.http.get<Prescription[]>(`${this.baseUrl}/prescriptions/active`)
-  //     .subscribe({
-  //       next: prescriptions => {
-  //         this.activePrescriptions = prescriptions;
-  //         this.prescriptionDataSource.data = prescriptions;
-  //       },
-  //       error: err => {
-  //         console.error('Error loading prescriptions:', err);
-  //         // Mock data for development
-  //         this.activePrescriptions = [
-  //           {
-  //             prescriptionID: 1,
-  //             medicationName: 'Lisinopril',
-  //             dosage: '10mg',
-  //             frequency: 'Once daily',
-  //             startDate: '2025-01-01',
-  //             endDate: '2025-04-01',
-  //             refillsRemaining: 2,
-  //             status: 'Active'
-  //           },
-  //           {
-  //             prescriptionID: 2,
-  //             medicationName: 'Metformin',
-  //             dosage: '500mg',
-  //             frequency: 'Twice daily',
-  //             startDate: '2025-01-01',
-  //             endDate: '2025-06-01',
-  //             refillsRemaining: 0,
-  //             status: 'Refill Needed'
-  //           }
-  //         ];
-  //         this.prescriptionDataSource.data = this.activePrescriptions;
-  //       }
-  //     });
-  // }
-
-  // Load recent lab results
-  // private loadRecentLabResults(): void {
-  //   this.http.get<LabResult[]>(`${this.baseUrl}/lab-results/recent`)
-  //     .subscribe({
-  //       next: results => {
-  //         this.recentLabResults = results;
-  //         this.labResultDataSource.data = results;
-  //       },
-  //       error: err => {
-  //         console.error('Error loading lab results:', err);
-  //         // Mock data
-  //         this.recentLabResults = [
-  //           {
-  //             labID: 1,
-  //             testName: 'Blood Glucose',
-  //             result: '95 mg/dL',
-  //             normalRange: '70-100 mg/dL',
-  //             date: '2025-01-10',
-  //             status: 'Normal'
-  //           },
-  //           {
-  //             labID: 2,
-  //             testName: 'Cholesterol',
-  //             result: '220 mg/dL',
-  //             normalRange: '<200 mg/dL',
-  //             date: '2025-01-10',
-  //             status: 'High'
-  //           }
-  //         ];
-  //         this.labResultDataSource.data = this.recentLabResults;
-  //       }
-  //     });
-  // }
-
-  // Load primary doctor info
-  // private loadPrimaryDoctor(): void {
-  //   this.http.get<Doctor>(`${this.baseUrl}/primary-doctor`)
-  //     .subscribe({
-  //       next: doctor => {
-  //         this.primaryDoctor = doctor;
-  //       },
-  //       error: err => {
-  //         console.error('Error loading primary doctor:', err);
-  //         // Mock data
-  //         this.primaryDoctor = {
-  //           doctorID: 1,
-  //           firstName: 'Dr. Sarah',
-  //           lastName: 'Smith',
-  //           specialty: 'Family Medicine',
-  //           officeHours: 'Mon-Fri 8:00 AM - 5:00 PM',
-  //           phone: '(555) 123-4567',
-  //           email: 'dr.smith@healthcare.com'
-  //         };
-  //       }
-  //     });
-  // }
-
-  // Load notifications
-  // private loadNotifications(): void {
-  //   this.http.get<Notification[]>(`${this.baseUrl}/notifications`)
-  //     .subscribe({
-  //       next: notifications => {
-  //         this.notifications = notifications.filter(n => !n.dismissed);
-  //       },
-  //       error: err => {
-  //         console.error('Error loading notifications:', err);
-  //         // Mock data
-  //         this.notifications = [
-  //           {
-  //             notificationID: 1,
-  //             message: 'Annual physical exam due',
-  //             type: 'reminder',
-  //             date: '2025-01-15',
-  //             priority: 'medium',
-  //             dismissed: false
-  //           },
-  //           {
-  //             notificationID: 2,
-  //             message: 'Prescription refill needed for Metformin',
-  //             type: 'prescription',
-  //             date: '2025-01-16',
-  //             priority: 'high',
-  //             dismissed: false
-  //           }
-  //         ];
-  //       }
-  //     });
-  // }
-
-  // Action methods
+  // action methods
   bookNewAppointment(): void {
     const ref = this.dialog.open(BookAppointmentDialog, {
       width: '400px',
@@ -286,7 +178,7 @@ export class PatientHome implements OnInit {
 
     ref.afterClosed()
       .subscribe(result => {
-        // result = {specialization, doctor, date, reason}
+        // result = {date, doctorChoice, reason, specialization, time}
         if (result) {
           this.createAppointment(result);
       }
@@ -294,13 +186,53 @@ export class PatientHome implements OnInit {
   }
 
   createAppointment(result: any) {
+    console.log(result);
 
+    this.patientDetailsService.currentPatientId // patient id, to be sent in req
+    result.doctorChoice // doctor id, to be sent in req
+
+    const newAppointmentDate = this.formatToSqlTimestamp(result.date); // appointment date, to be sent in req
+    console.log(newAppointmentDate);
+
+    result.reason // reason, to be sent in req
+    const notes = "None"; // notes, for after appointment by doctor, to be sent in req as blank/ N/A / None
+    const status = "Scheduled"; // status, to be sent in req
+    const isActive = "true"; // deletion check (isActive field), to be sent in req
+
+    const newAppointment: AppointmentCreationDTO = {
+      patientID: this.patientDetailsService.currentPatientId!,
+      doctorID: result.doctorChoice,
+      appointmentDate: newAppointmentDate,
+      reason: result.reason,
+      notes: notes,
+      status: status,
+      isActive: isActive
+    }
+
+    console.log(newAppointment);
+
+    const headers = {'Authorization': `Bearer ${this.loginService.getToken()}`}
+    const response = this.http.post(`${this.appointmentUrl}`, newAppointment, { headers })
+
+    response.subscribe({
+      next: (res) => {
+        Swal.fire('Success', 'Appointment booking confirmed!', 'success');
+      },
+      error: (err) => {
+        Swal.fire('Error', 'Appointment booking failed!', 'error');
+      },
+      complete: () => {
+        this.loadUpcomingAppointments();
+      }
+    })
   }
 
   rescheduleAppointment(appointmentID: number): void {
     Swal.fire({
       title: 'Reschedule Appointment',
-      text: `Rescheduling appointment ${appointmentID}`,
+      text: `Rescheduling appointment ${appointmentID}
+      (not implemented yet)
+      `,
       icon: 'info',
       confirmButtonText: 'OK'
     });
@@ -309,7 +241,9 @@ export class PatientHome implements OnInit {
   cancelAppointment(appointmentID: number): void {
     Swal.fire({
       title: 'Cancel Appointment',
-      text: `Are you sure you want to cancel appointment ${appointmentID}?`,
+      text: `Are you sure you want to cancel appointment ${appointmentID}?
+      (not implemented yet)
+      `,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, Cancel',
@@ -357,10 +291,12 @@ export class PatientHome implements OnInit {
     }
   }
 
+  // notifications have been put off for now
   dismissNotification(notificationID: number): void {
     this.notifications = this.notifications.filter(n => n.notificationID !== notificationID);
   }
 
+  // for the mat components color themeing
   getStatusColor(status: string): string {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'primary';
@@ -371,6 +307,23 @@ export class PatientHome implements OnInit {
       case 'low': return 'warn';
       default: return 'primary';
     }
+  }
+
+  formatToSqlTimestamp(dateInput: string): string {
+    const dt = new Date(dateInput);
+
+    const pad = (num: number, size = 2) =>
+      num.toString().padStart(size, '0');
+
+    const year   = dt.getFullYear();
+    const month  = pad(dt.getMonth() + 1);
+    const day    = pad(dt.getDate());
+    const hours  = pad(dt.getHours());
+    const mins   = pad(dt.getMinutes());
+    const secs   = pad(dt.getSeconds());
+    const millis = pad(dt.getMilliseconds(), 3);
+
+    return `${year}-${month}-${day} ${hours}:${mins}:${secs}.${millis}`;
   }
 
   logout(): void {

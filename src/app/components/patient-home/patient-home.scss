@@ -1,13 +1,13 @@
-/* ─────────────────────────────────────────
-   Patient Home Component - Healthcare Theme
-   ─────────────────────────────────────────── */
-
 :host {
   display: block;
   height: 100%;
 }
 
-/* Main container styling */
+html {
+scroll-behavior: smooth;
+}
+
+// main container styling
 .page-container {
   height: 100vh;
   background: var(--mat-sys-background);
@@ -18,7 +18,7 @@
   background: var(--mat-sys-background);
 }
 
-/* Toolbar styling */
+// toolbar styling
 .toolbar mat-toolbar {
   background-color: var(--mat-sys-primary);
   color: var(--mat-sys-on-primary);
@@ -36,7 +36,7 @@
   }
 }
 
-/* Sidenav styling */
+// sidenav styling
 mat-sidenav.sidebar {
   background-color: var(--mat-sys-surface-container);
   color: var(--mat-sys-on-surface);
@@ -99,7 +99,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Notifications banner */
+// notifications banner styling
 .notifications-banner {
   padding: 1rem;
 
@@ -126,7 +126,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Main dashboard layout */
+// main dashboard layout
 .dashboard-layout {
   padding: 1.5rem;
   display: flex;
@@ -135,7 +135,7 @@ mat-sidenav.sidebar {
   height: calc(100vh - 64px - 3rem);
 }
 
-/* Top section - Upcoming Appointments */
+// upcoming appointments section
 .top-panel-section {
   flex: 0 0 60%;
 
@@ -174,7 +174,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Bottom section - Tabbed panels */
+// other bottom panels section
 .bottom-panels-section {
   flex: 1;
 
@@ -193,7 +193,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Table styling */
+// table styling
 .table-container {
   height: 100%;
   overflow-y: auto;
@@ -218,7 +218,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Material table styling */
+// mat styling for table
 :host ::ng-deep {
   .mat-mdc-table {
     width: 100%;
@@ -262,7 +262,7 @@ mat-sidenav.sidebar {
     border-bottom: 1px solid var(--mat-sys-outline-variant);
   }
 
-  /* Tab styling */
+
   .mat-mdc-tab-label {
     font-weight: 500;
     color: var(--mat-sys-on-surface-variant);
@@ -277,7 +277,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Medical Summary sections */
+// summary sections
 .medical-summary {
   display: flex;
   flex-direction: column;
@@ -305,7 +305,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Care Team Info */
+// care person/team section
 .care-team-info {
   .doctor-card {
     max-width: 400px;
@@ -358,7 +358,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Health Records Coming Soon */
+// past prescriptions and more section
 .health-records {
   .coming-soon {
     display: flex;
@@ -392,7 +392,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Responsive design */
+// responsiveness of elements
 @media (max-width: 1200px) {
   .top-panel-section {
     flex: 0 0 50%;
@@ -431,7 +431,7 @@ mat-sidenav.sidebar {
   }
 }
 
-/* Print styles */
+// print styling
 @media print {
   .dashboard-layout {
     padding: 0;

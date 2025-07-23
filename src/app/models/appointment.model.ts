@@ -6,6 +6,7 @@ export interface Appointment {
   reason?: string;
   status?: string;
   notes?: string;
+  isActive?: string;
 }
 
 export interface AppointmentWithNamesDTO {
@@ -16,4 +17,14 @@ export interface AppointmentWithNamesDTO {
   reason?: string;
   status?: string;
   notes?: string;
+}
+
+export interface AppointmentCreationDTO {
+  patientID: number;
+  doctorID: number;
+  appointmentDate: string;
+  reason: string;
+  status: string;
+  notes: string;
+  isActive: string;
 }

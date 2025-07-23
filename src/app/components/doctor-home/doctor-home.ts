@@ -60,6 +60,10 @@ export class DoctorHome {
     this.loadAppointments(this.loginService.getDoctorID());
   }
 
+  navToDashboard() {
+    this.router.navigate(['/dashboard'])
+  }
+
   private loadAppointments(doctorId?: number, statusFilter?: string): void {
     const params: any = {};
     if (doctorId != null)    params.doctorId     = doctorId;

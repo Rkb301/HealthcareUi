@@ -16,6 +16,7 @@
     "@angular/core": "^20.0.0",
     "@angular/forms": "^20.0.0",
     "@angular/material": "^20.0.3",
+    "@angular/material-date-fns-adapter": "^20.0.3",
     "@angular/platform-browser": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@material/image-list": "^14.0.0",

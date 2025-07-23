@@ -11,6 +11,12 @@
         <a class="nav-item" mat-list-item routerLink="appointments" id="appointment-nav" (click)="showAppointments()" >
           <span>Appointments</span>
         </a>
+        <a class="nav-item" mat-list-item routerLink="patient" id="patient-nav" (click)="navToPatientHome()" >
+          <span>Patient Home</span>
+        </a>
+        <a class="nav-item" mat-list-item routerLink="doctor" id="doctor-nav" (click)="navToDoctorHome()" >
+          <span>Doctor Home</span>
+        </a>
       </mat-nav-list>
 
       <button class="logout-btn" (click)="logout()">

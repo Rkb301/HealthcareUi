@@ -1,37 +1,136 @@
+<div class="booking-dialog">
 <h2 mat-dialog-title>Book Appointment</h2>
 
 <form [formGroup]="appointmentForm" mat-dialog-content>
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Specialization</mat-label>
-    <mat-select formControlName="specialization">
+    <mat-select
+      formControlName="specialization"
+      [(value)]="specializationSelected"
+      placeholder="specialization"
+      (selectionChange)="getSpecificDoctors()"
+    >
       <mat-option value="" disabled>Choose specialization…</mat-option>
-      <mat-option *ngFor="let opt of specialistOptions" [value]="opt.id">
+      <mat-option *ngFor="let opt of specialistOptions" id="specialistOption" [value]="opt.specialization">
         {{ opt.specialization }}
       </mat-option>
     </mat-select>
     <mat-error *ngIf="appointmentForm.get('specialization')?.hasError('required')">
-      Specialization is required
+      Select Specialization to proceed
     </mat-error>
   </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Date</mat-label>
-    <input matInput type="date" formControlName="date" />
-    <mat-error *ngIf="appointmentForm.get('date')?.hasError('required')">
-      Date is required
-    </mat-error>
-  </mat-form-field>
+  @if (doctorChoiceShow) {
+    <div class="doctorChoice">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Choose Doctor</mat-label>
+        <mat-select
+        formControlName="doctorChoice"
+        [(value)]="doctorSelected"
+        placeholder="doctor"
+        (selectionChange)="showAppointmentDateTime()"
+        >
+          <mat-option value="" disabled>Choose Doctor...</mat-option>
+          <mat-option *ngFor="let doc of doctorOptions" id="doctorOption" [value]="doc.id">
+            {{ doc.doctor }}, {{ doc.gender }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="appointmentForm.get('doctorChoice')?.hasError('required')">
+          Choose doctor to proceed
+        </mat-error>
+      </mat-form-field>
+    </div>
+  }
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Reason</mat-label>
-    <textarea matInput formControlName="reason" rows="3"></textarea>
-    <mat-error *ngIf="appointmentForm.get('reason')?.hasError('required')">
-      Reason is required
-    </mat-error>
-    <mat-error *ngIf="appointmentForm.get('reason')?.hasError('maxlength')">
-      Cannot exceed 255 characters
-    </mat-error>
-  </mat-form-field>
+  @if (appointmentDateTimeShow) {
+    <div class="appointmentDateChoice">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Date</mat-label>
+        <input
+          matInput
+          readonly
+          [matDatepicker]="dp"
+          formControlName="date"
+          [min]="minDate"
+          [max]="maxDate"/>
+        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+        <mat-datepicker #dp></mat-datepicker>
+        <mat-error *ngIf="appointmentForm.get('date')?.hasError('required')">
+          Date is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Time</mat-label>
+        <input
+          matInput
+          readonly
+          [matTimepicker]="tp"
+          formControlName="time"
+          matTimepickerMin="8:00"
+          matTimepickerMax="18:00"
+          (selectionchange)="showReasonSelector()"
+        />
+        <mat-timepicker-toggle matSuffix [for]="tp"></mat-timepicker-toggle>
+        <mat-timepicker #tp></mat-timepicker>
+        <mat-error *ngIf="appointmentForm.get('time')?.hasError('required')">
+          Time is required
+        </mat-error>
+      </mat-form-field>
+
+    </div>
+  }
+
+  @if (reasonShow) {
+    <div class="reasonChoice">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Reason</mat-label>
+
+        <mat-select
+          formControlName="reason"
+          [(value)]="reasonSelected"
+          placeholder="reason"
+          (selectionChange)="showReasonOtherBox()"
+        >
+          <mat-option value="" disabled>Choose reason</mat-option>
+          <mat-option *ngFor="let opt of reasonOptions" id="reasonOption" [value]="opt.reason">
+            {{ opt.reason }}
+          </mat-option>
+        </mat-select>
+
+        <mat-error *ngIf="appointmentForm.get('reason')?.hasError('required')">
+          Reason is required
+        </mat-error>
+        <mat-error *ngIf="appointmentForm.get('reason')?.hasError('maxlength')">
+          Cannot exceed 255 characters
+        </mat-error>
+      </mat-form-field>
+    </div>
+  }
+
+  @if (reasonOtherShow) {
+    <div class="reasonOtherText">
+      <mat-form-field appearance="outline" class="full-width">
+        <textarea
+          matInput
+          formControlName="reason"
+          rows="5"
+          minlength="3"
+          maxlength="255"
+        ></textarea>
+
+        <mat-error *ngIf="appointmentForm.get('reason')?.hasError('required')">
+          Reason is required
+        </mat-error>
+        <mat-error *ngIf="appointmentForm.get('reason')?.hasError('maxlength')">
+          Cannot exceed 255 characters
+        </mat-error>
+        <mat-error *ngIf="appointmentForm.get('reason')?.hasError('minlength')">
+          Reason has to be at least 3 characters
+        </mat-error>
+      </mat-form-field>
+    </div>
+  }
 </form>
 
 <mat-dialog-actions align="end">
@@ -40,3 +139,4 @@
     Save
   </button>
 </mat-dialog-actions>
+</div>

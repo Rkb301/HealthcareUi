@@ -171,11 +171,11 @@ export class LoginService {
                 // console.log('admin id:- ' + this.adminID);
                 this.doctorService.setUser(obj.data[0])
             })
-          }
+          };
         })
-      }
-    }
-  }
+      };
+    };
+  };
 
   async getDetails() {
     switch (this.role) {

@@ -8,15 +8,17 @@ import { PatientTable } from './components/patient-table/patient-table';
 import { Home } from './components/home/home';
 import { PatientHome } from './components/patient-home/patient-home';
 import { BookAppointmentDialog } from './components/book-appointment-dialog/book-appointment-dialog';
+import { AuthGuard } from './services/auth-guard';
+import { unauthorizedGuard } from './services/unauthorized-guard';
 
 
 export const routes: Routes = [
   {path: "", redirectTo: "/login", pathMatch: "full"},
+  {path: "doctor", component: DoctorHome, canActivate: [AuthGuard], canDeactivate: [unauthorizedGuard]},
+  {path: "patient", component: PatientHome, canActivate: [AuthGuard], canDeactivate: [unauthorizedGuard]},
+  {path: "book-appointment", component: BookAppointmentDialog, canActivate: [AuthGuard], canDeactivate: [unauthorizedGuard]},
+  {path: "home", component: Home, canActivate: [AuthGuard], canDeactivate: [unauthorizedGuard]},
+  {path: "dashboard", component: Dashboard, canActivate: [AuthGuard], canDeactivate: [unauthorizedGuard]},
   {path: "login", component: Login},
-  {path: "doctor", component: DoctorHome}, // TEMPORARY PATH UNTIL HOME SETUP
-  { path: "patient", component: PatientHome },
-  {path: "book-appointment", component: BookAppointmentDialog},
-  {path: "home", component: Home},
-  {path: "dashboard", component: Dashboard},
   {path: "**", component: PageNotFound}
 ];
