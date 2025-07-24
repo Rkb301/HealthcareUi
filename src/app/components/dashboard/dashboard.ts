@@ -17,6 +17,7 @@ import { PatientDetailsService } from '../../services/patient-details.service';
 import { DoctorDetailsService } from '../../services/doctor-details.service';
 import { AdminDetailsService } from '../../services/admin-details.service';
 import { Doctor } from '../../models/doctor.model';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,6 +28,7 @@ import { Doctor } from '../../models/doctor.model';
     MatIconModule,
     MatListModule,
     MatButtonModule,
+    MatCardModule,
     // PatientTable,
     // DoctorTable,
     // AppointmentTable,
@@ -49,27 +51,66 @@ export class Dashboard {
   showAppointment = false;
 
   role = this.loginService.getRole();
-  patientUser: Patient = {firstName:'Test'};
-  doctorUser: Doctor = {firstName:'Test'};
+  patientUser: Patient = {};
+  doctorUser: Doctor = {};
   adminUser: Admin = {};
 
   stats = [
     {
-      name: 'Patients',
-      icon: '👨‍💼',
-      route: '/patients',
-    },
-    {
-      name: 'Doctors',
-      icon: '👨‍⚕️',
-      route: '/doctors',
-    },
-    {
-      name: 'Appointments',
-      icon: '📅',
-      route: '/appointments',
+      name: '',
+      icon: ''
     }
   ];
+
+  renderStats() {
+    if (this.role == 'Admin') {
+      this.stats = [
+        {
+          name: 'Appointments',
+          icon: '📅'
+        },
+        {
+          name: 'Patients',
+          icon: '🤵‍♂️'
+        },
+        {
+          name: 'Doctors',
+          icon: '👨‍⚕️'
+        }
+      ]
+    } else if (this.role == 'Patient') {
+      this.stats = [
+        {
+          name: 'Health Summary',
+          icon: 'medical_services'
+        },
+        {
+          name: 'Pending Payments',
+          icon: '💳'
+        },
+        {
+          name: 'TBD',
+          icon: '🕒'
+        }
+      ]
+    } else if (this.role == 'Doctor') {
+      this.stats = [
+        {
+          name: 'Urgent Appointments',
+          icon: 'medical_services'
+        },
+        {
+          name: 'Pending Payments',
+          icon: '💳'
+        },
+        {
+          name: 'TBD',
+          icon: '🕒'
+        }
+      ]
+    }
+  }
+
 
 
   // navToPatients() {
@@ -108,61 +149,30 @@ export class Dashboard {
     });
   }
 
-  setCurrentUserDetails(role: string) {
-    switch (role) {
-      case 'Patient':
-        this.patientUser = this.pdSvc.currentUser!
-        break;
-      case 'Doctor':
-        this.doctorUser = this.ddSvc.currentUser!
-        break;
-      case 'Admin':
-        this.adminUser = this.adSvc.currentUser!
-        break;
-      default:
-        break;
-    }
-  }
+  // fix below function post demo
 
-  // showPatients() {
-  //   if (this.showPatient == false) {
-  //     this.showPatient = true;
-  //     this.showAppointment = false;
-  //     this.showDoctor = false;
-  //     document.getElementById("patient-nav")!.style.backgroundColor = "#ff5722";
-  //     document.getElementById("appointment-nav")!.style.backgroundColor = "transparent";
-  //     document.getElementById("doctor-nav")!.style.backgroundColor = "transparent";
-  //   } else if (this.showPatient == true) {
-  //     this.showPatient = false;
-  //     document.getElementById("patient-nav")!.style.backgroundColor = "transparent";
-  //   }
-  // }
-
-  // showDoctors() {
-  //   if (this.showDoctor == false) {
-  //     this.showDoctor = true;
-  //     this.showPatient = false;
-  //     this.showAppointment = false;
-  //     document.getElementById("doctor-nav")!.style.backgroundColor = "#ff5722";
-  //     document.getElementById("appointment-nav")!.style.backgroundColor = "transparent";
-  //     document.getElementById("patient-nav")!.style.backgroundColor = "transparent";
-  //   } else if (this.showDoctor == true) {
-  //     this.showDoctor = false;
-  //     document.getElementById("doctor-nav")!.style.backgroundColor = "transparent";
-  //   }
-  // }
-
-  // showAppointments() {
-  //   if (this.showAppointment == false) {
-  //     this.showAppointment = true;
-  //     this.showPatient = false;
-  //     this.showDoctor = false;
-  //     document.getElementById("appointment-nav")!.style.backgroundColor = "#ff5722";
-  //     document.getElementById("patient-nav")!.style.backgroundColor = "transparent";
-  //     document.getElementById("doctor-nav")!.style.backgroundColor = "transparent";
-  //   } else if (this.showAppointment == true) {
-  //     this.showAppointment = false;
-  //     document.getElementById("appointment-nav")!.style.backgroundColor = "transparent";
+  // setCurrentUserDetails(role: string) {
+  //   switch (role) {
+  //     case 'Patient':
+  //       this.patientUser.firstName = this.loginService.getFirstName()
+  //       this.patientUser.lastName = this.loginService.getLastName()
+  //       this.doctorUser = {}
+  //       this.adminUser = {}
+  //       break;
+  //     case 'Doctor':
+  //       this.doctorUser.firstName = this.loginService.getFirstName()
+  //       this.doctorUser.lastName = this.loginService.getLastName()
+  //       this.patientUser = {}
+  //       this.adminUser = {}
+  //       break;
+  //     case 'Admin':
+  //       this.adminUser.username = this.loginService.getFirstName()
+  //       // this.adminUser.username = this.loginService.getLastName()
+  //       this.patientUser = {}
+  //       this.doctorUser = {}
+  //       break;
+  //     default:
+  //       break;
   //   }
   // }
 
@@ -180,7 +190,12 @@ export class Dashboard {
       this.router.navigate(['/login'])
     }
 
-    this.setCurrentUserDetails(this.role);
+    this.renderStats();
+
+    // this.setCurrentUserDetails(this.role);
+    this.patientUser = {}
+    this.doctorUser = {}
+    this.adminUser = {}
 
     this.router.events.subscribe(evt => {
       if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {

@@ -24,12 +24,23 @@ export class LoginService {
   private doctorID = '';
   private adminID = '';
 
+  private firstName = '';
+  private lastName = '';
+
   private patientService = inject(PatientDetailsService);
   private doctorService = inject(DoctorDetailsService);
   private adminService = inject(AdminDetailsService);
 
   getToken(): string {
     return this.token;
+  }
+
+  getFirstName(): string {
+    return this.firstName;
+  }
+
+  getLastName(): string {
+    return this.lastName;
   }
 
   getRole(): string {
@@ -143,6 +154,8 @@ export class LoginService {
               .then((data) => {
                 const obj = JSON.parse(data);
                 this.patientID = obj.data[0].patientID;
+                this.firstName = obj.data[0].firstName;
+                this.lastName = obj.data[0].lastName;
                 // console.log('patient id:- ' + this.patientID);
                 this.patientService.setUser(obj.data[0])
             })
@@ -160,6 +173,8 @@ export class LoginService {
               .then((data) => {
                 const obj = JSON.parse(data);
                 this.doctorID = obj.data[0].doctorID;
+                this.firstName = obj.data[0].firstName;
+                this.lastName = obj.data[0].lastName;
                 // console.log('doctor ID:- ' + this.doctorID);
                 this.doctorService.setUser(obj.data[0])
             })
@@ -177,6 +192,7 @@ export class LoginService {
               .then((data) => {
                 const obj = JSON.parse(data);
                 this.adminID = obj.data[0].userID;
+                this.firstName = obj.data[0].username;
                 // console.log('admin id:- ' + this.adminID);
                 this.adminService.setUser(obj.data[0])
             })

@@ -28,12 +28,13 @@
         </a>
       </mat-nav-list>
 
-      @if (role == 'Admin') {
+      <ng-container *ngIf="role == 'Admin'">
         <hr class="admin-hr">
-      }
-      @if (role == 'Patient' || role == 'Doctor') {
+      </ng-container>
+
+      <ng-container *ngIf="role == 'Patient' || role == 'Doctor'">
         <hr class="non-admin-hr">
-      }
+      </ng-container>
 
       <a class="logout-btn" (click)="logout()">
         <mat-icon>logout</mat-icon>
@@ -54,17 +55,23 @@
 
       <div class="content-area">
         @if (role == 'Patient') {
-          <span class="welcome-title"><strong>Welcome {{role}} {{patientUser.firstName}},</strong></span>
+          <span class="welcome-title"><strong>Welcome {{role}},</strong></span>
         }
         @if (role == 'Doctor') {
-          <span class="welcome-title"><strong>Welcome {{role}} {{doctorUser.firstName}},</strong></span>
+          <span class="welcome-title"><strong>Welcome {{role}},</strong></span>
         }
         @if (role == 'Admin') {
-          <span class="welcome-title"><strong>Welcome {{role}} {{adminUser.username}},</strong></span>
+          <span class="welcome-title"><strong>Welcome {{role}},</strong></span>
         }
 
         <div>
           <span class="dashboard-content"><strong>Dashboard to be implemented</strong></span>
+        </div>
+        <div class="dashboard-stats">
+          <mat-card class="stat-card" *ngFor="let s of stats">
+            <mat-icon class="stat-icon">{{ s.icon }}</mat-icon>
+            <div class="stat-title">{{ s.name }}</div>
+          </mat-card>
         </div>
       </div>
     </mat-sidenav-content>
