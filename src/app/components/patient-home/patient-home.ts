@@ -107,7 +107,7 @@ export class PatientHome implements OnInit {
   notifications: Notification[] = [];
 
   // API endpoints (more to be added as needed)
-  baseUrl = "http://localhost:5122/api/patient";
+  patientUrl = "http://localhost:5122/api/patient";
   appointmentUrl = "http://localhost:5122/api/appointment";
 
   // display columns for tables
@@ -133,6 +133,12 @@ export class PatientHome implements OnInit {
   ngOnInit(): void {
     this.loadPatientData();
 
+    // logout on refresh (local cookie storage not implemented)
+    if (!this.loginService.isLoggedIn()) {
+      this.logout()
+      this.router.navigate(['/login'])
+    }
+
     // prevent entry into app via browser back button or forward
     this.router.events.subscribe(evt => {
       if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
@@ -142,6 +148,22 @@ export class PatientHome implements OnInit {
     })
   }
 
+    // Swal.fire({
+    //   title: 'Leaving page',
+    //   text: 'This will log you out!',
+    //   icon: 'warning',
+    //   showCancelButton: true,
+    //   confirmButtonText: 'Yes, log out',
+    //   cancelButtonText: 'No, take me back'
+    // }).then((result) => {
+    //   if (result.isConfirmed) {
+    //     event.preventDefault()
+    //     this.logout()
+    //     this.router.navigate(['/login'])
+    //   }
+    // });
+
+  /* data loading methods */
   private loadPatientData(): void {
     this.loadUpcomingAppointments();
     // this.loadActivePrescriptions();
@@ -150,26 +172,36 @@ export class PatientHome implements OnInit {
     // this.loadNotifications();
   }
 
-  navToDashboard() {
-    this.router.navigate(['/dashboard'])
-  }
-
-  // load upcoming appointments
   private loadUpcomingAppointments(): void {
     const headers = {'Authorization': `Bearer ${this.loginService.getToken()}`}
-    this.http.get<PatientAppointment[]>(`${this.baseUrl}/proc`, {headers})
+    this.http.get<PatientAppointment[]>(`${this.patientUrl}/proc`, {headers})
       .subscribe({
         next: (response) => {
           this.upcomingAppointments = response;
           this.appointmentDataSource.data = response;
         },
         error: (error) => {
-          Swal.fire("Error", `Could not load upcoming appointments (${error.statusText})`, "error");
+          if (error.statusText == "Unauthorized") {
+            // return to login if signed out (by refresh action or similar)
+            Swal.fire({
+              title: 'Warning',
+              text: 'Logged out! (Page refresh logs you out!)',
+              icon: 'warning'
+            }).then((result) => {
+              if (result.isDismissed || result.isConfirmed) {
+                this.logout()
+                this.router.navigate(['/login'])
+              }
+            });
+          } else {
+            // regular error popup if signed in
+            Swal.fire("Error", `Could not load upcoming appointments (${error.statusText})`, "error");
+          }
         }
       })
   };
 
-  // action methods
+  /* action methods */
   bookNewAppointment(): void {
     const ref = this.dialog.open(BookAppointmentDialog, {
       width: '400px',
@@ -227,6 +259,32 @@ export class PatientHome implements OnInit {
     })
   }
 
+  navToDashboard() {
+    this.router.navigate(['/dashboard'])
+  }
+
+  healthRecordsNav() {
+    Swal.fire({
+      title: 'Health Records',
+      text: `View your past appointments and prescriptions
+      (not implemented yet)
+      `,
+      icon: 'info',
+      confirmButtonText: 'OK'
+    });
+  }
+
+  billingNav() {
+    Swal.fire({
+      title: 'Billing',
+      text: `View your leftover payments or make a payment for your latest visit
+      (not implemented yet)
+      `,
+      icon: 'info',
+      confirmButtonText: 'OK'
+    });
+  }
+
   rescheduleAppointment(appointmentID: number): void {
     Swal.fire({
       title: 'Reschedule Appointment',
@@ -250,7 +308,8 @@ export class PatientHome implements OnInit {
       cancelButtonText: 'No'
     }).then((result) => {
       if (result.isConfirmed) {
-        // API call to cancel appointment
+        // cancel appointment requires changes to API (to be implemented next)
+        // this.cancelRequest();
         Swal.fire('Cancelled!', 'Your appointment has been cancelled.', 'success');
       }
     });
@@ -324,6 +383,15 @@ export class PatientHome implements OnInit {
     const millis = pad(dt.getMilliseconds(), 3);
 
     return `${year}-${month}-${day} ${hours}:${mins}:${secs}.${millis}`;
+  }
+
+  async cancelRequest() {
+    const response = await fetch(`${this.appointmentUrl}/`, {
+      method: "DELETE",
+      headers: {
+        'Authorization': `Bearer ${this.loginService.getToken()}`
+      }
+    })
   }
 
   logout(): void {

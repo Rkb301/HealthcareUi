@@ -1,8 +1,8 @@
 <div class="page-container">
   <mat-sidenav-container class="dashboard-container">
-    <mat-sidenav class="sidebar" #sidenav mode="side" opened>
+    <mat-sidenav class="sidebar" #sidenav mode="side" closed>
       <mat-nav-list>
-        <a class="nav-item" mat-list-item routerLink="patients" id="patient-nav" (click)="showPatients()" >
+        <!-- <a class="nav-item" mat-list-item routerLink="patients" id="patient-nav" (click)="showPatients()" >
           <span>Patients</span>
         </a>
         <a class="nav-item" mat-list-item routerLink="doctors" id="doctor-nav" (click)="showDoctors()" >
@@ -10,19 +10,35 @@
         </a>
         <a class="nav-item" mat-list-item routerLink="appointments" id="appointment-nav" (click)="showAppointments()" >
           <span>Appointments</span>
-        </a>
-        <a class="nav-item" mat-list-item routerLink="patient" id="patient-nav" (click)="navToPatientHome()" >
-          <span>Patient Home</span>
-        </a>
-        <a class="nav-item" mat-list-item routerLink="doctor" id="doctor-nav" (click)="navToDoctorHome()" >
-          <span>Doctor Home</span>
+        </a> -->
+        @if (role == 'Admin' || role == 'Patient') {
+          <a class="nav-item" mat-list-item id="patient-home-nav" (click)="navToPatientHome()" >
+            <span>Patient Home</span>
+          </a>
+        }
+
+        @if (role == 'Admin' || role == 'Doctor') {
+          <a class="nav-item" mat-list-item id="doctor-home-nav" (click)="navToDoctorHome()" >
+            <span>Doctor Home</span>
+          </a>
+        }
+
+        <a class="nav-item" mat-list-item id="support-nav" (click)="navToSupport()">
+          <span>Support desk</span>
         </a>
       </mat-nav-list>
 
-      <button class="logout-btn" (click)="logout()">
-        <mat-icon>exit_to_app</mat-icon>
+      @if (role == 'Admin') {
+        <hr class="admin-hr">
+      }
+      @if (role == 'Patient' || role == 'Doctor') {
+        <hr class="non-admin-hr">
+      }
+
+      <a class="logout-btn" (click)="logout()">
+        <mat-icon>logout</mat-icon>
         <span>Logout</span>
-      </button>
+      </a>
     </mat-sidenav>
 
     <mat-sidenav-content>
@@ -35,48 +51,22 @@
           <mat-icon class="account">account_circle</mat-icon>
         </mat-toolbar>
       </div>
+
       <div class="content-area">
-        <!-- Patients Table condition -->
-        @if (showPatient) {
-          <div class="patient-table-container">
-            <app-patient-table></app-patient-table>
-          </div>
+        @if (role == 'Patient') {
+          <span class="welcome-title"><strong>Welcome {{role}} {{patientUser.firstName}},</strong></span>
+        }
+        @if (role == 'Doctor') {
+          <span class="welcome-title"><strong>Welcome {{role}} {{doctorUser.firstName}},</strong></span>
+        }
+        @if (role == 'Admin') {
+          <span class="welcome-title"><strong>Welcome {{role}} {{adminUser.username}},</strong></span>
         }
 
-        <!-- Doctors Table condition -->
-        @if (showDoctor) {
-          <div class="doctor-table-container">
-            <app-doctor-table></app-doctor-table>
-          </div>
-        }
-
-        <!-- Appointments Table condition -->
-        @if (showAppointment) {
-          <div class="appointment-table-container">
-            <app-appointment-table></app-appointment-table>
-          </div>
-        }
+        <div>
+          <span class="dashboard-content"><strong>Dashboard to be implemented</strong></span>
+        </div>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>
-
-
-
-  <!-- <div class="dashboard-cards">
-    <a class="dashboard-card" (click)="navToPatients()">
-      <div class="icon">{{stats[0].icon}}</div>
-      <div class="title">{{stats[0].name}}</div>
-      <div class="desc">{{stats[0].description}}</div>
-    </a>
-    <a class="dashboard-card" (click)="navToDoctors()">
-      <div class="icon">{{stats[1].icon}}</div>
-      <div class="title">{{stats[1].name}}</div>
-      <div class="desc">{{stats[1].description}}</div>
-    </a>
-    <a class="dashboard-card" (click)="navToAppointments()">
-      <div class="icon">{{stats[2].icon}}</div>
-      <div class="title">{{stats[2].name}}</div>
-      <div class="desc">{{stats[2].description}}</div>
-    </a>
-  </div> -->

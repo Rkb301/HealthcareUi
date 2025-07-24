@@ -40,7 +40,7 @@ export class Login {
   });
 
   signUpForm = this.fb.nonNullable.group({
-    signUpName:     ['', Validators.required, Validators.pattern('[a-zA-Z ]')],
+    signUpName:     ['', [Validators.required, Validators.pattern('^[A-Za-z ]+$')]],
     signUpEmail:    ['', [Validators.required, Validators.email]],
     signUpPassword: ['', [Validators.required, Validators.minLength(6)]],
     signUpRole:     ['Patient', Validators.required],

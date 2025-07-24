@@ -12,6 +12,11 @@
       <div class="error" *ngIf="signUpForm.get('signUpName')?.invalid && signUpForm.get('signUpName')?.touched">
         Name is required.
       </div>
+      <div class="error"
+           *ngIf="signUpForm.get('signUpName')?.invalid && (signUpForm.get('signUpName')?.dirty || signUpForm.get('signUpName')?.touched)">
+        Enter a valid name.
+      </div>
+
 
       <input
         type="email"

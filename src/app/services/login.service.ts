@@ -48,6 +48,15 @@ export class LoginService {
     return parseInt(this.adminID);
   }
 
+  isLoggedIn() {
+    if (this.token == null) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+
   // Sign In
   async signIn(email: string, password: string): Promise<void> {
     const response = await fetch(`${this.authUrl}/login`, {
@@ -169,7 +178,7 @@ export class LoginService {
                 const obj = JSON.parse(data);
                 this.adminID = obj.data[0].userID;
                 // console.log('admin id:- ' + this.adminID);
-                this.doctorService.setUser(obj.data[0])
+                this.adminService.setUser(obj.data[0])
             })
           };
         })
@@ -192,15 +201,6 @@ export class LoginService {
       default:
         Swal.fire("Not Found", "User not found", "error");
         break;
-    }
-  }
-
-  isLoggedIn() {
-    if (this.token == null) {
-      return false;
-    }
-    else {
-      return true;
     }
   }
 }
