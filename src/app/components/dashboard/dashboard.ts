@@ -89,7 +89,7 @@ export class Dashboard {
           icon: '💳'
         },
         {
-          name: 'TBD',
+          name: 'New Patient',
           icon: '🕒'
         }
       ]
@@ -104,34 +104,22 @@ export class Dashboard {
           icon: '💳'
         },
         {
-          name: 'TBD',
+          name: 'New Doctor',
           icon: '🕒'
         }
       ]
     }
   }
 
-
-
-  // navToPatients() {
-  //   this.router.navigateByUrl('/patients')
-  // }
-
-  // navToDoctors() {
-  //   this.router.navigate(['/doctors'])
-  // }
-
-  // navToAppointments() {
-  //   this.router.navigate(['/appointments'])
-  // }
-
   navToPatientHome() {
+    // patient home page navigation
     if (this.role == 'Patient' || this.role == 'Admin') {
       this.router.navigate(['/patient'])
     }
   }
 
   navToDoctorHome() {
+    // doctor home page navigation
     if (this.role == 'Doctor' || this.role == 'Admin') {
       this.router.navigate(['/doctor'])
     }
@@ -149,7 +137,102 @@ export class Dashboard {
     });
   }
 
-  // fix below function post demo
+  cardClick(s: { name: string, icon: string }) {
+    // handle card click based on role
+    if (this.role == 'Admin') {
+      Swal.fire({
+        title: 'Not implemented',
+        text: `(not implemented yet)`,
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    }
+    else if (this.role == 'Patient') {
+      if (s.name == 'New Patient') {
+        Swal.fire({
+          title: 'Enter your details',
+          text: `Newly registered patients will enter their details here before gaining access to the rest of the app.
+          Currently sign up only adds user details to User table.
+          (not implemented yet)
+          `,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      } else {
+        Swal.fire({
+          title: 'Not implemented',
+          text: `(not implemented yet)`,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
+    else if (this.role == 'Doctor') {
+      if (s.name == 'New Doctor') {
+        Swal.fire({
+          title: 'Enter your details',
+          text: `Newly registered doctors will enter their details here before gaining access to the rest of the app.
+          Currently sign up only adds user details to User table.
+          (not implemented yet)
+          `,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      } else {
+        Swal.fire({
+          title: 'Not implemented',
+          text: `(not implemented yet)`,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
+  }
+
+  logout() {
+    fetch('http://localhost:5122/api/auth/logout', {
+      method: 'POST'
+    })
+    this.router.navigate(['/login']);
+  }
+
+  ngOnInit() {
+    // logout on refresh (local cookie storage not implemented)
+    if (!this.loginService.isLoggedIn()) {
+      this.logout()
+      this.router.navigate(['/login'])
+    }
+
+    this.renderStats();
+    if (this.role != 'Patient' && this.role != 'Doctor' && this.role != 'Admin') {
+      Swal.fire({
+        title: 'Logged Out',
+        text: 'Refreshing the page will log you out.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        this.logout();
+        this.router.navigate(['/login']);
+      });
+    }
+
+    // this.setCurrentUserDetails(this.role);
+    // this.patientUser = {}
+    // this.doctorUser = {}
+    // this.adminUser = {}
+
+    this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
+        this.logout();
+        this.router.navigate(['/login']);
+      }
+    })
+  }
+
+  // fix below function post demos
+  // the details services for each role were causing a massive glitch in the UI
+  // most probably due to null returns from the current user?
+  // debug and fix later
 
   // setCurrentUserDetails(role: string) {
   //   switch (role) {
@@ -175,34 +258,4 @@ export class Dashboard {
   //       break;
   //   }
   // }
-
-  logout() {
-    fetch('http://localhost:5122/api/auth/logout', {
-      method: 'POST'
-    })
-    this.router.navigate(['/login']);
-  }
-
-  ngOnInit() {
-    // logout on refresh (local cookie storage not implemented)
-    if (!this.loginService.isLoggedIn()) {
-      this.logout()
-      this.router.navigate(['/login'])
-    }
-
-    this.renderStats();
-
-    // this.setCurrentUserDetails(this.role);
-    this.patientUser = {}
-    this.doctorUser = {}
-    this.adminUser = {}
-
-    this.router.events.subscribe(evt => {
-      if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
-        this.logout();
-        this.router.navigate(['/login']);
-      }
-    })
-  }
-
 }

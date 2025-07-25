@@ -232,7 +232,7 @@ export class PatientHome implements OnInit {
     const isActive = "true"; // deletion check (isActive field), to be sent in req
 
     const newAppointment: AppointmentCreationDTO = {
-      patientID: this.patientDetailsService.currentPatientId!,
+      patientID: this.patientDetailsService.currentPatientId! || 1, // since new users dont get added to patient table yet
       doctorID: result.doctorChoice,
       appointmentDate: newAppointmentDate,
       reason: result.reason,

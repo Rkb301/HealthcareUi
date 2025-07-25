@@ -68,7 +68,7 @@
           <span class="dashboard-content"><strong>Dashboard to be implemented</strong></span>
         </div>
         <div class="dashboard-stats">
-          <mat-card class="stat-card" *ngFor="let s of stats">
+          <mat-card class="stat-card" *ngFor="let s of stats" (click)="cardClick(s)">
             <mat-icon class="stat-icon">{{ s.icon }}</mat-icon>
             <div class="stat-title">{{ s.name }}</div>
           </mat-card>

@@ -67,16 +67,34 @@ export class DoctorHome {
   private loadAppointments(doctorId?: number, statusFilter?: string): void {
     const params: any = {};
     if (doctorId != null)    params.doctorId     = doctorId;
-    if (statusFilter)        params.statusFilter = statusFilter;
+    if (statusFilter) params.statusFilter = statusFilter;
+
+    const headers = {'Authorization': `Bearer ${this.loginService.getToken()}`}
 
     this.http
-      .get<CurrentAppointmentsDTO[]>(`${this.baseUrl}/proc`, { params })
+      .get<CurrentAppointmentsDTO[]>(`${this.baseUrl}/proc`, { params, headers})
       .subscribe({
         next: appointments => {
           this.dataSource.data = appointments;
         },
-        error: err => {
-          Swal.fire('Error', err || 'Failed data fetch', 'error')
+        error: (error) => {
+          if (error.statusText == "Unauthorized") {
+            // return to login if signed out (by refresh action or similar)
+            Swal.fire({
+              title: 'Warning',
+              text: 'Logged out! (Page refresh logs you out!)',
+              icon: 'warning'
+            }).then((result) => {
+              if (result.isDismissed || result.isConfirmed) {
+                this.logout()
+                this.router.navigate(['/login'])
+              }
+            });
+          }
+          else {
+            // regular error popup if signed in
+            Swal.fire("Error", `Could not load upcoming appointments (${error.statusText})`, "error");
+          }
         }
       });
   }
