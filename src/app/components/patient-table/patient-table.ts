@@ -29,6 +29,12 @@ interface PagedResult<T> {
   totalPages: number;
 }
 
+interface JsonPatchOperation {
+  op: string;
+  path: string;
+  value: any;
+}
+
 @Component({
   selector: 'app-patient-table',
   standalone: true,
@@ -46,7 +52,7 @@ interface PagedResult<T> {
     MatSidenavModule,
     MatListModule,
     TableShell
-],
+  ],
   templateUrl: './patient-table.html',
   styleUrl: './patient-table.scss',
 })
@@ -63,26 +69,54 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   ];
 
   dataSource = new MatTableDataSource<Patient>();
-
   resultsLength = 0;
   isLoadingResults = true;
   isRateLimitReached = false;
-
   searchControl = new FormControl('');
 
   private baseUrl = 'http://localhost:5122/api/patient';
+  private headers = {'Authorization': `Bearer ${this.loginService.getToken()}`};
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   ngAfterViewInit() {
-    this.getPatients(
-            this.paginator.pageIndex + 1,
-            this.paginator.pageSize,
-            this.sort.active,
-            this.sort.direction
-          )
+    // Use setTimeout to ensure ViewChild elements are ready
+    setTimeout(() => {
+      this.initializeTable();
+    }, 0);
+  }
+
+  private initializeTable() {
+    // Set default paginator values if not set
+    if (this.paginator) {
+      this.paginator.pageSize = this.paginator.pageSize || 10;
+      this.paginator.pageIndex = this.paginator.pageIndex || 0;
+    }
+
+    // Make initial HTTP call
+    this.loadPatients();
+
+    // Setup reactive search and pagination
     this.setupDynamicSearch();
+  }
+
+  private loadPatients() {
+    const pageNumber = this.paginator ? this.paginator.pageIndex + 1 : 1;
+    const pageSize = this.paginator ? this.paginator.pageSize : 10;
+
+    this.getPatients(pageNumber, pageSize).subscribe({
+      next: (data) => {
+        this.isLoadingResults = false;
+        this.dataSource.data = data.data;
+        this.resultsLength = data.totalCount;
+      },
+      error: (error) => {
+        console.error('Error loading patients:', error);
+        this.isLoadingResults = false;
+        this.isRateLimitReached = true;
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -95,6 +129,11 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   }
 
   private setupDynamicSearch() {
+    if (!this.paginator || !this.sort) {
+      console.error('Paginator or Sort not initialized');
+      return;
+    }
+
     this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
 
     const searchChanges$ = this.searchControl.valueChanges.pipe(
@@ -144,47 +183,48 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
     if (query && query.trim()) {
       params = params.set('query', query.trim());
+      return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params, headers: this.headers });
     }
 
-    let headers = {'Authorization': `Bearer ${this.loginService.getToken()}`}
-
-    return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params, headers });
+    return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params, headers: this.headers });
   }
 
   clearFilter(): void {
     this.searchControl.setValue('');
-    this.paginator.pageIndex = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
   }
 
   getPatientID(row: Patient): Observable<number> {
     let params = new HttpParams()
       .set('pageNumber', (this.paginator.pageIndex + 1).toString())
-      .set('pageSize',    this.paginator.pageSize.toString());
+      .set('pageSize', this.paginator.pageSize.toString());
 
     if (this.sort.active && this.sort.direction) {
       params = params
-        .set('sort',  this.sort.active)
+        .set('sort', this.sort.active)
         .set('order', this.sort.direction);
     }
 
     params = params
-      .set('firstName',         row.firstName         || '')
-      .set('lastName',          row.lastName          || '')
-      .set('contactNumber',     row.contactNumber     || '')
-      .set('medicalHistory',    row.medicalHistory    || '')
-      .set('allergies',         row.allergies         || '')
+      .set('firstName', row.firstName || '')
+      .set('lastName', row.lastName || '')
+      .set('contactNumber', row.contactNumber || '')
+      .set('medicalHistory', row.medicalHistory || '')
+      .set('allergies', row.allergies || '')
       .set('currentMedications',row.currentMedications|| '');
 
     return this.http
-      .get<PagedResult<Patient>>(`${this.baseUrl}/search`, { params })
+      .get<PagedResult<Patient>>(`${this.baseUrl}/search`, { params, headers: this.headers })
       .pipe(
         map(data => {
           const match = data.data.find(p =>
-            p.firstName          === row.firstName &&
-            p.lastName           === row.lastName  &&
-            p.contactNumber      === row.contactNumber &&
-            p.medicalHistory     === row.medicalHistory &&
-            p.allergies          === row.allergies &&
+            p.firstName === row.firstName &&
+            p.lastName === row.lastName &&
+            p.contactNumber === row.contactNumber &&
+            p.medicalHistory === row.medicalHistory &&
+            p.allergies === row.allergies &&
             p.currentMedications === row.currentMedications
           );
           if (!match) {
@@ -216,11 +256,11 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   deleteRow(row: Patient): void {
     this.getPatientID(row).subscribe({
       next: (patientId) => {
-        this.http.delete(`${this.baseUrl}/${patientId}`)
+        this.http.delete(`${this.baseUrl}/${patientId}`, { headers: this.headers })
           .subscribe({
             next: () => {
               Swal.fire('Deleted', 'Patient removed successfully', 'success');
-              this.setupDynamicSearch();
+              this.loadPatients();
             },
             error: () => {
               Swal.fire('Error', 'Deletion failed', 'error');
@@ -235,19 +275,19 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
   private openPatientModal(existing?: Patient): Promise<Patient> {
     const fields = [
-      { key: 'firstName',       label: 'First Name',         type: 'text' },
-      { key: 'lastName',        label: 'Last Name',          type: 'text' },
-      { key: 'dateOfBirth',     label: 'Date of Birth',      type: 'date' },
-      { key: 'gender',          label: 'Gender',             type: 'select', options: ['Male','Female','Other'] },
-      { key: 'contactNumber',   label: 'Contact Number',     type: 'number' },
-      { key: 'address',         label: 'Address',            type: 'text' },
-      { key: 'medicalHistory',  label: 'Medical History',    type: 'text' },
-      { key: 'allergies',       label: 'Allergies',          type: 'text' },
+      { key: 'firstName', label: 'First Name', type: 'text' },
+      { key: 'lastName', label: 'Last Name', type: 'text' },
+      { key: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
+      { key: 'gender', label: 'Gender', type: 'select', options: ['Male','Female','Other'] },
+      { key: 'contactNumber', label: 'Contact Number', type: 'number' },
+      { key: 'address', label: 'Address', type: 'text' },
+      { key: 'medicalHistory', label: 'Medical History', type: 'text' },
+      { key: 'allergies', label: 'Allergies', type: 'text' },
       { key: 'currentMedications', label: 'Current Medications', type: 'text' }
     ];
 
     function getDefaultValue(key: string, type: string): string {
-      const defaults: Record<string,string> = {
+      const defaults: Record<string, string> = {
         firstName: 'First Name',
         lastName: 'Last Name',
         contactNumber: '1234567890',
@@ -269,20 +309,20 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
       if (f.type === 'select') {
         return `
-          <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
-          <select id="${f.key}" class="swal2-input" style="padding:0.5em">
+          <label>${f.label}</label>
+          <select id="${f.key}" class="swal2-select">
             ${f.options!.map(opt => `
-              <option value="${opt}"
-                ${opt === value ? 'selected' : ''}>
+              <option value="${opt}" ${value === opt ? 'selected' : ''}>
                 ${opt}
-              </option>`).join('')}
+              </option>
+            `).join('')}
           </select>`;
       }
 
       return `
-        <label for="${f.key}" style="display:block; margin:0.5em 0 0.2em">${f.label}</label>
-        <input id="${f.key}" class="swal2-input" type="${f.type}"
-               value="${value}">`;
+        <label>${f.label}</label>
+        <input id="${f.key}" class="swal2-input" type="${f.type}" value="${value}">
+      `;
     }).join('');
 
     return Swal.fire({
@@ -297,7 +337,7 @@ export class PatientTable implements AfterViewInit, OnDestroy {
         for (const f of fields) {
           const selector = `#${f.key}`;
           const el = Swal.getPopup()!.querySelector(selector) as
-                     HTMLInputElement|HTMLSelectElement|null;
+            HTMLInputElement|HTMLSelectElement|null;
           const val = el?.value.trim();
           if (!el || !val) {
             Swal.showValidationMessage(`${f.label} is required`);
@@ -315,7 +355,6 @@ export class PatientTable implements AfterViewInit, OnDestroy {
     });
   }
 
-
   editRow(row: Patient) {
     this.openPatientModal(row)
       .then(edited => {
@@ -329,11 +368,11 @@ export class PatientTable implements AfterViewInit, OnDestroy {
         this.getPatientID(row).subscribe({
           next: id => {
             this.http.patch(`${this.baseUrl}/${id}`, ops, {
-              headers: { 'Content-Type': 'application/json-patch+json' }
+              headers: { 'Content-Type': 'application/json-patch+json', ...this.headers }
             }).subscribe({
               next: () => {
                 Swal.fire('Saved','Patient updated','success');
-                this.setupDynamicSearch();
+                this.loadPatients();
               },
               error: e => Swal.fire('Error','Update failed','error')
             });
@@ -347,10 +386,10 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   createRow() {
     this.openPatientModal()
       .then(newData => {
-        this.http.post<Patient>(this.baseUrl, newData).subscribe({
+        this.http.post(this.baseUrl, newData, { headers: this.headers }).subscribe({
           next: p => {
             Swal.fire('Created','Patient added','success');
-            this.setupDynamicSearch();
+            this.loadPatients();
           },
           error: e => Swal.fire('Error','Creation failed','error')
         });
@@ -364,6 +403,4 @@ export class PatientTable implements AfterViewInit, OnDestroy {
     })
     this.router.navigate(['/login']);
   }
-
 }
-
