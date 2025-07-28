@@ -15,6 +15,11 @@ import { catchError, debounceTime, distinctUntilChanged, filter, map, startWith,
 import { Patient } from '../../models/patient.model';
 import { MatIconModule } from '@angular/material/icon';
 import Swal from 'sweetalert2';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from "@angular/material/list";
+import { Router } from '@angular/router';
+import { LoginService } from '../../services/login.service';
+import { TableShell } from "../table-shell/table-shell";
 
 interface PagedResult<T> {
   data: T[];
@@ -37,14 +42,19 @@ interface PagedResult<T> {
     MatSortModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    ReactiveFormsModule
-  ],
+    ReactiveFormsModule,
+    MatSidenavModule,
+    MatListModule,
+    TableShell
+],
   templateUrl: './patient-table.html',
   styleUrl: './patient-table.scss',
 })
 export class PatientTable implements AfterViewInit, OnDestroy {
   private http = inject(HttpClient);
   private destroy$ = new Subject<void>();
+  private router = inject(Router);
+  private loginService = inject(LoginService);
 
   displayedColumns: string[] = [
     'firstName', 'lastName', 'dateOfBirth', 'gender',
@@ -66,12 +76,22 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort) sort!: MatSort;
 
   ngAfterViewInit() {
+    this.getPatients(
+            this.paginator.pageIndex + 1,
+            this.paginator.pageSize,
+            this.sort.active,
+            this.sort.direction
+          )
     this.setupDynamicSearch();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  navToDashboard() {
+    this.router.navigate(['/dashboard'])
   }
 
   private setupDynamicSearch() {
@@ -126,7 +146,9 @@ export class PatientTable implements AfterViewInit, OnDestroy {
       params = params.set('query', query.trim());
     }
 
-    return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params });
+    let headers = {'Authorization': `Bearer ${this.loginService.getToken()}`}
+
+    return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params, headers });
   }
 
   clearFilter(): void {
@@ -334,6 +356,13 @@ export class PatientTable implements AfterViewInit, OnDestroy {
         });
       })
       .catch(() => {/* cancelled */});
+  }
+
+  logout() {
+    fetch('http://localhost:5122/api/auth/logout', {
+      method: 'POST'
+    })
+    this.router.navigate(['/login']);
   }
 
 }

@@ -14,6 +14,7 @@ import { Doctor }                           from '../../models/doctor.model';
 import { MatIconModule }                    from '@angular/material/icon';
 import { merge, of, combineLatest, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { TableShell } from "../table-shell/table-shell";
 
 @Component({
   selector: 'app-doctor-table',
@@ -28,8 +29,9 @@ import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchM
     MatSortModule,
     MatProgressSpinnerModule,
     ReactiveFormsModule,
-    MatIconModule
-  ],
+    MatIconModule,
+    TableShell
+],
   templateUrl: './doctor-table.html',
   styleUrls: ['./doctor-table.scss']
 })

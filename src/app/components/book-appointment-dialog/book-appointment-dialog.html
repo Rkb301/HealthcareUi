@@ -9,6 +9,7 @@
       [(value)]="specializationSelected"
       placeholder="specialization"
       (selectionChange)="getSpecificDoctors()"
+      class="special-select"
     >
       <mat-option value="" disabled>Choose specialization…</mat-option>
       <mat-option *ngFor="let opt of specialistOptions" id="specialistOption" [value]="opt.specialization">
@@ -135,7 +136,7 @@
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="appointmentForm.invalid">
+  <button mat-raised-button (click)="onSave()" [disabled]="appointmentForm.invalid" style="color: black;">
     Save
   </button>
 </mat-dialog-actions>

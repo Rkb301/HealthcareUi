@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import { PatientDetailsService } from './patient-details.service';
 import { DoctorDetailsService } from './doctor-details.service';
 import { AdminDetailsService } from './admin-details.service';
+import { Router } from '@angular/router';
 
 // export interface LoginResponse {
 //   accessToken: string;
@@ -30,6 +31,8 @@ export class LoginService {
   private patientService = inject(PatientDetailsService);
   private doctorService = inject(DoctorDetailsService);
   private adminService = inject(AdminDetailsService);
+
+  private router = inject(Router);
 
   getToken(): string {
     return this.token;
@@ -66,6 +69,27 @@ export class LoginService {
     else {
       return true;
     }
+  }
+
+  logout() {
+    this.token = '';
+    this.role = '';
+    this.userEmail = '';
+    this.username = '';
+    this.patientID = '';
+    this.doctorID = '';
+    this.adminID = '';
+    this.firstName = '';
+    this.lastName = '';
+
+    this.patientService.clearUser();
+    this.doctorService.clearUser();
+    this.adminService.clearUser();
+
+    fetch('http://localhost:5122/api/auth/logout', {
+      method: 'POST'
+    });
+    this.router.navigate(['/login']);
   }
 
   // Sign In

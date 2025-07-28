@@ -1,0 +1,80 @@
+@use '@angular/material' as mat;
+
+@mixin themed-table() {
+  .mat-mdc-table {
+    width: 100%;
+    background: var(--mat-sys-surface);
+    border-collapse: collapse;
+    border-radius: var(--mat-sys-corner-medium);
+  }
+
+  .mat-mdc-header-row {
+    background: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .mat-mdc-cell, .mat-mdc-header-cell {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    color: var(--mat-sys-on-surface);
+    font-size: .875rem;
+  }
+
+  .mat-mdc-header-cell {
+    color: var(--mat-sys-on-primary);
+    font-weight: 700;
+  }
+
+  .mat-mdc-row {
+    background: var(--mat-sys-surface-container-low);
+  }
+
+  .mat-mdc-row:nth-child(even) {
+    background: var(--mat-sys-surface);
+  }
+
+  .mat-mdc-row:hover {
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+  }
+
+  .search-bar {
+    background: var(--mat-sys-surface-container-low);
+    padding: .75rem;
+    border-radius: var(--mat-sys-corner-medium);
+    margin-bottom: 1rem;
+    border: 1px solid var(--mat-sys-outline-variant);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .mat-form-field {
+      width: 100%;
+      flex: 1;
+    }
+
+    input {
+      color: var(--mat-sys-on-surface);
+      background-color: var(--mat-sys-surface);
+    }
+
+    button {
+      min-height: 40px;
+      color: var(--mat-sys-primary);
+      margin-left: 0.5rem;
+    }
+  }
+
+  mat-progress-spinner {
+    place-self: center;
+  }
+
+  .mat-mdc-paginator {
+    background-color: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    border-top: 1px solid var(--mat-sys-outline-variant);
+  }
+}

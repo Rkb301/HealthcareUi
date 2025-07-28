@@ -1,4 +1,9 @@
 /* patient-table.scss */
+@use '../shared/table-theme' as shared;
+
+:host {
+  @include shared.themed-table();
+}
 
 ::ng-deep .mat-table-wrapper {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

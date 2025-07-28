@@ -1,0 +1,38 @@
+<mat-sidenav-container class="page-container">
+  <mat-sidenav
+      mode="side"
+      opened
+      class="sidebar">
+
+    <!-- Primary nav -->
+    <button mat-button
+            class="nav-item"
+            routerLink="/dashboard">
+      <mat-icon>dashboard</mat-icon>
+      <span>Dashboard</span>
+    </button>
+
+    <!-- Contextual nav -->
+    <ng-content select="[tableLinks]"></ng-content>
+
+    <hr class="admin-hr">
+    <button mat-button (click)="logout()" class="logout-btn">
+      <mat-icon>logout</mat-icon>
+      Logout
+    </button>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar>
+      <span>{{title}}</span>
+      <span class="spacer"></span>
+      <button mat-icon-button (click)="openDialog()"
+              *ngIf="canCreate">
+        <mat-icon>add</mat-icon>
+      </button>
+    </mat-toolbar>
+    <div class="content-area">
+      <ng-content></ng-content>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

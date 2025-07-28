@@ -1,0 +1,103 @@
+@use '../shared/table-theme' as shared;
+
+:host {
+  @include shared.themed-table();
+}
+
+.page-container {
+  height: 100vh;
+  background: var(--mat-sys-background);
+}
+
+.sidebar {
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  width: 280px;
+
+  .nav-item {
+    color: var(--mat-sys-on-surface);
+    padding: 0.75rem 1rem;
+    margin: 0.25rem 0.5rem;
+    border-radius: var(--mat-sys-corner-small);
+    transition: all 0.2s ease;
+    font-weight: 500;
+    width: 90%;
+    text-align: left;
+    justify-content: flex-start;
+
+    span {
+      color: var(--mat-sys-on-surface);
+      margin-left: 0.5rem;
+    }
+
+    &:hover {
+      background-color: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+
+      span {
+        color: var(--mat-sys-on-primary-container);
+      }
+    }
+
+    &.active {
+      background-color: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+
+      span {
+        color: var(--mat-sys-on-primary);
+      }
+    }
+  }
+
+  .admin-hr {
+    border: none;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    margin: 1rem 0.5rem;
+  }
+
+  .logout-btn {
+    margin-top: auto;
+    background: transparent;
+    border: none;
+    color: var(--mat-sys-error);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 90%;
+    border-radius: var(--mat-sys-corner-small);
+    text-align: left;
+    justify-content: flex-start;
+
+    mat-icon {
+      margin-right: 0.5rem;
+    }
+
+    &:hover {
+      background-color: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
+    }
+  }
+}
+
+mat-toolbar {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  box-shadow: var(--mat-sys-level2);
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  button {
+    color: var(--mat-sys-on-primary);
+  }
+}
+
+.content-area {
+  padding: 1rem;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+}

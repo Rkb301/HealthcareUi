@@ -204,7 +204,7 @@ export class PatientHome implements OnInit {
   /* action methods */
   bookNewAppointment(): void {
     const ref = this.dialog.open(BookAppointmentDialog, {
-      width: '400px',
+      width: '500px',
       data: this.specialistOptions
     });
 

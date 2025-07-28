@@ -14,6 +14,10 @@ import { AppointmentWithNamesDTO, Appointment }          from '../../models/appo
 import { MatIconModule }                    from '@angular/material/icon';
 import { merge, of, combineLatest, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { LoginService } from '../../services/login.service';
+import { BookAppointmentDialog } from '../book-appointment-dialog/book-appointment-dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { TableShell } from "../table-shell/table-shell";
 
 @Component({
   selector: 'app-appointment-table',
@@ -28,22 +32,34 @@ import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchM
     MatSortModule,
     MatProgressSpinnerModule,
     ReactiveFormsModule,
-    MatIconModule
-  ],
+    MatIconModule,
+    TableShell
+],
   templateUrl: './appointment-table.html',
   styleUrls: ['./appointment-table.scss']
 })
 export class AppointmentTable implements AfterViewInit, OnDestroy {
   private http       = inject(HttpClient);
-  private destroy$   = new Subject<void>();
+  private destroy$ = new Subject<void>();
+  private loginService = inject(LoginService);
+  private dialog = inject(MatDialog);
+
   displayedColumns  = ['patientName','doctorName','appointmentDate','reason','status','notes','actions'];
+
   data: AppointmentWithNamesDTO[] = [];
-  resultsLength     = 0;
-  isLoading         = true;
+
+  resultsLength = 0;
+
+  isLoading = true;
   isRateLimitReached= false;
-  searchControl     = new FormControl('');
+
+  searchControl = new FormControl('');
+
+  headers = {'Authorization': `Bearer ${this.loginService.getToken()}`};
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort)       sort!: MatSort;
+
   private baseUrl = 'http://localhost:5122/api/appointment';
 
   ngAfterViewInit() {
@@ -68,9 +84,9 @@ export class AppointmentTable implements AfterViewInit, OnDestroy {
         }
         if (q) {
           params = params.set('query', q);
-          return this.http.get<any>(`${this.baseUrl}/search-lucene`, { params });
+          return this.http.get<any>(`${this.baseUrl}/search-lucene`, { params, headers: this.headers });
         }
-        return this.http.get<any>(`${this.baseUrl}`, { params });
+        return this.http.get<any>(`${this.baseUrl}`, { params, headers: this.headers });
       }),
       catchError(() => { this.isRateLimitReached=true; return of(null); }),
       map(res => {
@@ -191,6 +207,63 @@ export class AppointmentTable implements AfterViewInit, OnDestroy {
           error: () => Swal.fire('Error','Deletion failed','error')
         });
       }
+    });
+  }
+
+  openDialog(appointment?: AppointmentWithNamesDTO) {
+    // Get specializations for the dialog
+    this.http.get<any>(`${this.baseUrl.replace('/appointment', '')}/doctor/specializations`).subscribe({
+      next: (response) => {
+        const specializations = response.data || [];
+
+        const ref = this.dialog.open(BookAppointmentDialog, {
+          width: '600px',
+          data: {
+            specialistOptions: specializations,
+            appointment: appointment,
+            isAdmin: true // Always admin context in this component
+          }
+        });
+
+        ref.afterClosed().subscribe(result => {
+          if (result) {
+            if (appointment) {
+              this.updateAppointment(appointment.appointmentID, result);
+            } else {
+              this.createAppointment(result);
+            }
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading specializations:', error);
+      }
+    });
+  }
+
+  createAppointment(data: any) {
+    this.http.post(this.baseUrl, data).subscribe({
+      next: () => {
+        Swal.fire('Created', 'Appointment added', 'success');
+        this.ngAfterViewInit();
+      },
+      error: () => Swal.fire('Error', 'Creation failed', 'error')
+    });
+  }
+
+  updateAppointment(id: number, data: any) {
+    const ops = Object.keys(data).map(k => ({
+      op: 'replace', path: `/${k}`, value: data[k]
+    }));
+
+    this.http.patch(`${this.baseUrl}/${id}`, ops, {
+      headers: { 'Content-Type': 'application/json-patch+json' }
+    }).subscribe({
+      next: () => {
+        Swal.fire('Saved', 'Appointment updated', 'success');
+        this.ngAfterViewInit();
+      },
+      error: () => Swal.fire('Error', 'Update failed', 'error')
     });
   }
 }
