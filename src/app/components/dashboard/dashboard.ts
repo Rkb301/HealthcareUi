@@ -137,6 +137,18 @@ export class Dashboard {
     });
   }
 
+  navToPatientTable() {
+    this.router.navigate(['/patients-all']);
+  }
+
+  navToDoctorTable() {
+    this.router.navigate(['/doctors-all']);
+  }
+
+  navToAppointmentTable() {
+    this.router.navigate(['/appointments-all']);
+  }
+
   cardClick(s: { name: string, icon: string }) {
     // handle card click based on role
     if (this.role == 'Admin') {
