@@ -1,6 +1,5 @@
 import { PatientCreate } from './../../models/patient.model';
 import { OnInit } from '@angular/core';
-// src/app/components/patients/patient-table/patient-table.ts
 import { Component, AfterViewInit, ViewChild, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -307,22 +306,30 @@ export class PatientTable implements OnInit, OnDestroy, PatientCreate {
   }
 
   editRow(row: any): void {
-    this.getPatientID(row).subscribe({
-      next: (patientID) => {
-        // patient creation dialog
-        console.log('Editing patient:- ', row);
-        const ref = this.dialog.open(CreatePatientDialog, {
-          data: { mode: 'edit', patient: row }
-        });
-        ref.afterClosed().subscribe(result => {
-          if (result) {
-            // update logic
-            console.log('Updated patient details:', result);
-          }
-        })
-      },
-      error: (error) => {
-        Swal.fire('Error', 'Could not retrieve patient details', 'error');
+    const ref = this.dialog.open(CreatePatientDialog, {
+      data: { mode: 'edit', patient: row }
+    });
+
+    ref.afterClosed().subscribe(result => {
+      if (result) {
+        // update logic
+        const updatedDetails: PatientCreate = {
+          firstName: result.firstName,
+          lastName: result.lastName,
+          dateOfBirth: result.dateOfBirth,
+          gender: result.gender,
+          contactNumber: result.contactNumber,
+          address: result.address,
+          medicalHistory: result.medicalHistory,
+          currentMedications: result.currentMedications,
+          allergies: result.allergies,
+          createdAt: result.createdAt,
+          modifiedAt: result.modifiedAt,
+          isActive: result.isActive
+        }
+
+        this.updateRow(updatedDetails, row);
+        console.log('Updated patient details:', result);
       }
     });
   }
@@ -402,6 +409,47 @@ export class PatientTable implements OnInit, OnDestroy, PatientCreate {
         this.loadPatients();
       }
     })
+  }
+
+  // update patient details
+  updateRow(result: any, row: any): void {
+    // alter result to match format to put in json patch request
+
+    result.dateOfBirth = this.formatToSqlTimestamp(result.dateOfBirth, 'dateOnly');
+    result.createdAt = this.formatToSqlTimestamp(result.createdAt, 'dateTime');
+    result.modifiedAt = this.formatToSqlTimestamp(result.modifiedAt, 'dateTime');
+
+    // convert allergies array to comma separated string
+    result.allergies = result.allergies.toString();
+
+    const operations = Object.keys(result).map<JsonPatchOperation>(key => ({
+      op: 'replace',
+      path: `/${key}`,
+      value: result[key]
+    }));
+
+    // make the patch request and send it after making sure the patient is fetched and the format is correct
+    this.getPatientID(row).subscribe({
+      next: (patientID) => {
+        this.http.patch(`${this.baseUrl}/${patientID}`, operations, {
+          headers: {
+            'Content-Type': 'application/json-patch+json',
+            ...this.headers
+          }
+        }).subscribe({
+          next: () => {
+            Swal.fire('Saved', 'Patient updated', 'success');
+            this.loadPatients();
+          }, error(err) {
+            Swal.fire('Error', 'Update failed', 'error');
+          },
+        })
+        console.log('Editing patient:- ', row);
+      },
+      error: (error) => {
+        Swal.fire('Error', `Could not retrieve patient details`, 'error');
+      }
+    });
   }
 
   logout() {

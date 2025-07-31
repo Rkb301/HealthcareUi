@@ -276,14 +276,6 @@ export class CreatePatientDialog implements OnInit {
     }
   }
 
-  ngOnInit() {
-    this.getUserID();
-
-    if (this.data?.mode === 'edit' && this.data?.patient) {
-      this.populateFormForEdit(this.data.patient);
-    }
-  }
-
   private populateFormForEdit(patient: any): void {
     // Convert allergies string back to array for checkboxes
     const allergiesArray =
@@ -338,5 +330,13 @@ export class CreatePatientDialog implements OnInit {
 
     // Set gender selection for the UI
     this.genderSelected = patient.gender;
+  }
+
+  ngOnInit() {
+    this.getUserID();
+
+    if (this.data?.mode === 'edit' && this.data?.patient) {
+      this.populateFormForEdit(this.data.patient);
+    }
   }
 }
