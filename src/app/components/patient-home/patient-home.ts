@@ -218,8 +218,6 @@ export class PatientHome implements OnInit {
   }
 
   createAppointment(result: any) {
-    console.log(result);
-
     this.patientDetailsService.currentPatientId // patient id, to be sent in req
     result.doctorChoice // doctor id, to be sent in req
 
@@ -392,6 +390,11 @@ export class PatientHome implements OnInit {
         'Authorization': `Bearer ${this.loginService.getToken()}`
       }
     })
+
+    if (response.ok) {
+      Swal.fire('Cancelled!', 'Your appointment has been cancelled.', 'success');
+      this.loadUpcomingAppointments();
+    }
   }
 
   logout(): void {

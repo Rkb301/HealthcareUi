@@ -26,10 +26,10 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Choose Doctor</mat-label>
         <mat-select
-        formControlName="doctorChoice"
-        [(value)]="doctorSelected"
-        placeholder="doctor"
-        (selectionChange)="showAppointmentDateTime()"
+          formControlName="doctorChoice"
+          [(value)]="doctorSelected"
+          placeholder="doctor"
+          (selectionChange)="showAppointmentDateTime()"
         >
           <mat-option value="" disabled>Choose Doctor...</mat-option>
           <mat-option *ngFor="let doc of doctorOptions" id="doctorOption" [value]="doc.id">

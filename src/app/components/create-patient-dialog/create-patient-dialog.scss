@@ -4,14 +4,14 @@
 form {
   background-color:aliceblue;
   mat-select {
-    mat-option#specialistOption {
+    mat-option#genderOption {
       background-color: aliceblue;
       opacity: 100%;
     }
   }
 }
 
-div.booking-dialog {
+div.patient-dialog {
   background-color: aliceblue;
 }
 
@@ -37,8 +37,8 @@ form[mat-dialog-content] {
     margin-bottom: 1rem;
   }
 
-  mat-select.special-select {
-    mat-option.specialistOption {
+  mat-select.gender-select {
+    mat-option#genderOption {
       background: var(--mat-sys-surface-container-low);
       color: var(--mat-sys-on-surface);
       opacity: 100%;
@@ -60,7 +60,7 @@ mat-dialog-actions {
 }
 
 h2[mat-dialog-title] {
-  width: 500px;
+  width: 560px;
   color: var(--mat-sys-on-surface);
   background-color: var(--mat-sys-primary-container);
   color: var(--mat-sys-on-primary-container);

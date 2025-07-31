@@ -1,3 +1,5 @@
+import { PatientCreate } from './../../models/patient.model';
+import { OnInit } from '@angular/core';
 // src/app/components/patients/patient-table/patient-table.ts
 import { Component, AfterViewInit, ViewChild, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -5,21 +7,25 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Observable, merge, of, Subject, combineLatest } from 'rxjs';
+import { Observable, merge, of, Subject, combineLatest, Subscription } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, filter, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { Patient } from '../../models/patient.model';
 import { MatIconModule } from '@angular/material/icon';
 import Swal from 'sweetalert2';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from "@angular/material/list";
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import { TableShell } from "../table-shell/table-shell";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { CreatePatientDialog } from '../create-patient-dialog/create-patient-dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { PatientHome } from '../patient-home/patient-home';
 
 interface PagedResult<T> {
   data: T[];
@@ -51,16 +57,22 @@ interface JsonPatchOperation {
     ReactiveFormsModule,
     MatSidenavModule,
     MatListModule,
-    TableShell
-  ],
+    MatToolbarModule
+],
   templateUrl: './patient-table.html',
   styleUrl: './patient-table.scss',
 })
-export class PatientTable implements AfterViewInit, OnDestroy {
+export class PatientTable implements OnInit, OnDestroy, PatientCreate {
   private http = inject(HttpClient);
+
   private destroy$ = new Subject<void>();
+
   private router = inject(Router);
   private loginService = inject(LoginService);
+
+  private searchSubscription?: Subscription;
+
+  private dialog = inject(MatDialog);
 
   displayedColumns: string[] = [
     'firstName', 'lastName', 'dateOfBirth', 'gender',
@@ -70,9 +82,16 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
   dataSource = new MatTableDataSource<Patient>();
   resultsLength = 0;
-  isLoadingResults = true;
   isRateLimitReached = false;
+  isLoadingResults = true;
   searchControl = new FormControl('');
+
+  // state tracking variables
+  currentPage = 1;
+  pageSize = 10;
+  currentQuery = '';
+  sortField = '';
+  sortDirection = '';
 
   private baseUrl = 'http://localhost:5122/api/patient';
   private headers = {'Authorization': `Bearer ${this.loginService.getToken()}`};
@@ -80,113 +99,127 @@ export class PatientTable implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  ngAfterViewInit() {
-    // Use setTimeout to ensure ViewChild elements are ready
-    setTimeout(() => {
-      this.initializeTable();
-    }, 0);
-  }
-
-  private initializeTable() {
-    // Set default paginator values if not set
-    if (this.paginator) {
-      this.paginator.pageSize = this.paginator.pageSize || 10;
-      this.paginator.pageIndex = this.paginator.pageIndex || 0;
+  ngOnInit() {
+    // logout on refresh (local cookie storage not implemented)
+    if (!this.loginService.isLoggedIn()) {
+      this.logout()
+      this.router.navigate(['/login'])
     }
 
-    // Make initial HTTP call
+    // search debouncing rxjs (after 300ms of inactivity it refreshes the data)
+    this.searchSubscription = this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(query => {
+        this.handleSearchChange(query || '');
+      });
+
+    // initial data loading
     this.loadPatients();
 
-    // Setup reactive search and pagination
-    this.setupDynamicSearch();
-  }
-
-  private loadPatients() {
-    const pageNumber = this.paginator ? this.paginator.pageIndex + 1 : 1;
-    const pageSize = this.paginator ? this.paginator.pageSize : 10;
-
-    this.getPatients(pageNumber, pageSize).subscribe({
-      next: (data) => {
-        this.isLoadingResults = false;
-        this.dataSource.data = data.data;
-        this.resultsLength = data.totalCount;
-      },
-      error: (error) => {
-        console.error('Error loading patients:', error);
-        this.isLoadingResults = false;
-        this.isRateLimitReached = true;
+    // prevent entry into app via browser back button or forward
+    this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationStart && (evt.url == "" || evt.navigationTrigger == "popstate" || evt.navigationTrigger == "hashchange")) {
+        this.logout();
+        this.router.navigate(['/login']);
       }
-    });
+    })
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.searchSubscription?.unsubscribe();
+  }
+
+  handleSearchChange(query: string) {
+    console.log('Search query changed:', query);
+    this.currentQuery = query;
+    this.currentPage = 1; // Reset to first page on new search
+    this.loadPatients();
+  }
+
+  onPageChange(event: PageEvent) {
+    console.log('Page changed:', event);
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadPatients();
+  }
+
+  onSortChange(sort: Sort) {
+    console.log('Sort changed:', sort);
+    this.sortField = sort.active;
+    this.sortDirection = sort.direction;
+    this.currentPage = 1; // Reset to first page on sort change
+    this.loadPatients();
+  }
+
+  private loadPatients() {
+    this.isLoadingResults = true;
+    this.isRateLimitReached = false;
+
+    let params = new HttpParams()
+      .set('pageNumber', this.currentPage.toString())
+      .set('pageSize', this.pageSize.toString());
+
+    // Add sorting to params
+    if (this.sortField && this.sortDirection) {
+      params = params
+        .set('sort', this.sortField)
+        .set('order', this.sortDirection);
+    }
+
+    // Add search query to params
+    if (this.currentQuery.trim()) {
+      params = params.set('query', this.currentQuery.trim());
+    }
+
+    this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, {
+      params,
+      headers: this.headers
+    }).subscribe({
+      next: (data) => {
+        this.isLoadingResults = false;
+        this.dataSource.data = data.data;
+        this.resultsLength = data.totalCount;
+
+        // Update paginator (after view init)
+        if (this.paginator) {
+          this.paginator.pageIndex = this.currentPage - 1;
+          this.paginator.pageSize = this.pageSize;
+        }
+      },
+      error: (error) => {
+        if (error.statusText == "Unauthorized") {
+          // return to login if signed out (by refresh action or similar)
+          Swal.fire({
+            title: 'Warning',
+            text: 'Logged out! (Page refresh logs you out!)',
+            icon: 'warning'
+          }).then((result) => {
+            if (result.isDismissed || result.isConfirmed) {
+              this.logout()
+              this.router.navigate(['/login'])
+            }
+          });
+        } else {
+          // regular error popup if signed in
+          Swal.fire("Error", `Could not load patient data: ${error.statusText}`, "error");
+        }
+
+        // reset state
+        this.isLoadingResults = false;
+        this.isRateLimitReached = true;
+        this.dataSource.data = [];
+      }
+    });
   }
 
   navToDashboard() {
     this.router.navigate(['/dashboard'])
-  }
-
-  private setupDynamicSearch() {
-    if (!this.paginator || !this.sort) {
-      console.error('Paginator or Sort not initialized');
-      return;
-    }
-
-    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
-
-    const searchChanges$ = this.searchControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      distinctUntilChanged(),
-      map(query => query || '')
-    );
-
-    const paginationChanges$ = merge(
-      this.sort.sortChange,
-      this.paginator.page
-    ).pipe(startWith({}));
-
-    combineLatest([searchChanges$, paginationChanges$])
-      .pipe(
-        switchMap(([query]) => {
-          this.isLoadingResults = true;
-          return this.getPatients(
-            this.paginator.pageIndex + 1,
-            this.paginator.pageSize,
-            this.sort.active,
-            this.sort.direction,
-            query
-          ).pipe(catchError(() => of(null)));
-        }),
-        map(data => {
-          this.isLoadingResults = false;
-          this.isRateLimitReached = data === null;
-          if (data === null) return [];
-          this.resultsLength = data.totalCount;
-          return data.data;
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(data => this.dataSource.data = data);
-  }
-
-  getPatients(pageNumber: number, pageSize: number, sort?: string, order: string = "asc", query?: string): Observable<PagedResult<Patient>> {
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber.toString())
-      .set('pageSize', pageSize.toString());
-
-    if (sort && order) {
-      params = params.set('sort', sort).set('order', order);
-    }
-
-    if (query && query.trim()) {
-      params = params.set('query', query.trim());
-      return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params, headers: this.headers });
-    }
-
-    return this.http.get<PagedResult<Patient>>(`${this.baseUrl}/search-lucene`, { params, headers: this.headers });
   }
 
   clearFilter(): void {
@@ -198,13 +231,13 @@ export class PatientTable implements AfterViewInit, OnDestroy {
 
   getPatientID(row: Patient): Observable<number> {
     let params = new HttpParams()
-      .set('pageNumber', (this.paginator.pageIndex + 1).toString())
-      .set('pageSize', this.paginator.pageSize.toString());
+      .set('pageNumber', this.currentPage.toString())
+      .set('pageSize', this.pageSize.toString());
 
-    if (this.sort.active && this.sort.direction) {
+    if (this.sortField && this.sortDirection) {
       params = params
-        .set('sort', this.sort.active)
-        .set('order', this.sort.direction);
+        .set('sort', this.sortField)
+        .set('order', this.sortDirection);
     }
 
     params = params
@@ -213,7 +246,7 @@ export class PatientTable implements AfterViewInit, OnDestroy {
       .set('contactNumber', row.contactNumber || '')
       .set('medicalHistory', row.medicalHistory || '')
       .set('allergies', row.allergies || '')
-      .set('currentMedications',row.currentMedications|| '');
+      .set('currentMedications', row.currentMedications || '');
 
     return this.http
       .get<PagedResult<Patient>>(`${this.baseUrl}/search`, { params, headers: this.headers })
@@ -260,7 +293,7 @@ export class PatientTable implements AfterViewInit, OnDestroy {
           .subscribe({
             next: () => {
               Swal.fire('Deleted', 'Patient removed successfully', 'success');
-              this.loadPatients();
+              this.loadPatients(); // Refresh the table
             },
             error: () => {
               Swal.fire('Error', 'Deletion failed', 'error');
@@ -273,128 +306,102 @@ export class PatientTable implements AfterViewInit, OnDestroy {
     });
   }
 
-  private openPatientModal(existing?: Patient): Promise<Patient> {
-    const fields = [
-      { key: 'firstName', label: 'First Name', type: 'text' },
-      { key: 'lastName', label: 'Last Name', type: 'text' },
-      { key: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
-      { key: 'gender', label: 'Gender', type: 'select', options: ['Male','Female','Other'] },
-      { key: 'contactNumber', label: 'Contact Number', type: 'number' },
-      { key: 'address', label: 'Address', type: 'text' },
-      { key: 'medicalHistory', label: 'Medical History', type: 'text' },
-      { key: 'allergies', label: 'Allergies', type: 'text' },
-      { key: 'currentMedications', label: 'Current Medications', type: 'text' }
-    ];
-
-    function getDefaultValue(key: string, type: string): string {
-      const defaults: Record<string, string> = {
-        firstName: 'First Name',
-        lastName: 'Last Name',
-        contactNumber: '1234567890',
-        address: '123 Main St',
-        medicalHistory: 'None',
-        allergies: 'None',
-        currentMedications: 'None'
-      };
-      if (type === 'date') {
-        return new Date().toISOString().split('T')[0];
-      }
-      return defaults[key] ?? '';
-    }
-
-    const html = fields.map(f => {
-      const value = existing
-        ? (existing as any)[f.key] ?? getDefaultValue(f.key, f.type)
-        : getDefaultValue(f.key, f.type);
-
-      if (f.type === 'select') {
-        return `
-          <label>${f.label}</label>
-          <select id="${f.key}" class="swal2-select">
-            ${f.options!.map(opt => `
-              <option value="${opt}" ${value === opt ? 'selected' : ''}>
-                ${opt}
-              </option>
-            `).join('')}
-          </select>`;
-      }
-
-      return `
-        <label>${f.label}</label>
-        <input id="${f.key}" class="swal2-input" type="${f.type}" value="${value}">
-      `;
-    }).join('');
-
-    return Swal.fire({
-      title: existing ? 'Edit Patient' : 'New Patient',
-      html,
-      showCancelButton: true,
-      confirmButtonText: existing ? 'Save' : 'Create',
-      focusConfirm: false,
-      width: '600px',
-      preConfirm: () => {
-        const result: any = {};
-        for (const f of fields) {
-          const selector = `#${f.key}`;
-          const el = Swal.getPopup()!.querySelector(selector) as
-            HTMLInputElement|HTMLSelectElement|null;
-          const val = el?.value.trim();
-          if (!el || !val) {
-            Swal.showValidationMessage(`${f.label} is required`);
-            return;
+  editRow(row: any): void {
+    this.getPatientID(row).subscribe({
+      next: (patientID) => {
+        // patient creation dialog
+        console.log('Editing patient:- ', row);
+        const ref = this.dialog.open(CreatePatientDialog, {
+          data: { mode: 'edit', patient: row }
+        });
+        ref.afterClosed().subscribe(result => {
+          if (result) {
+            // update logic
+            console.log('Updated patient details:', result);
           }
-          result[f.key] = val;
-        }
-        return result as Patient;
+        })
+      },
+      error: (error) => {
+        Swal.fire('Error', 'Could not retrieve patient details', 'error');
       }
-    }).then(res => {
-      if (res.isConfirmed && res.value) {
-        return Promise.resolve(res.value);
-      }
-      return Promise.reject('cancelled');
     });
   }
 
-  editRow(row: Patient) {
-    this.openPatientModal(row)
-      .then(edited => {
-        // build JSON Patch operation
-        const ops = Object.keys(edited).map< JsonPatchOperation >(key => ({
-          op: 'replace',
-          path: `/${key}`,
-          value: (edited as any)[key]
-        }));
+  newPatient(): void {
+    const ref = this.dialog.open(CreatePatientDialog);
 
-        this.getPatientID(row).subscribe({
-          next: id => {
-            this.http.patch(`${this.baseUrl}/${id}`, ops, {
-              headers: { 'Content-Type': 'application/json-patch+json', ...this.headers }
-            }).subscribe({
-              next: () => {
-                Swal.fire('Saved','Patient updated','success');
-                this.loadPatients();
-              },
-              error: e => Swal.fire('Error','Update failed','error')
-            });
-          },
-          error: e => Swal.fire('Error', e.message,'error')
-        });
-      })
-      .catch(() => {/* cancelled */});
+    ref.afterClosed()
+      .subscribe(result => {
+        // result = {
+        // patientID, userID, firstName, lastName, dateOfBirth, gender, contactNumber,
+        // address, medicalHistory, currentMedications, allergies(array), createdAt, modifiedAt, isActive
+        // }
+        if (result) {
+          this.createRow(result);
+      }
+    })
   }
 
-  createRow() {
-    this.openPatientModal()
-      .then(newData => {
-        this.http.post(this.baseUrl, newData, { headers: this.headers }).subscribe({
-          next: p => {
-            Swal.fire('Created','Patient added','success');
-            this.loadPatients();
-          },
-          error: e => Swal.fire('Error','Creation failed','error')
-        });
-      })
-      .catch(() => {/* cancelled */});
+  // make json string object for result to convert to body of request
+  toString(patient: PatientCreate): string {
+    const obj =
+    `{
+    "patientID": ${patient.patientID},
+    "userID": ${patient.userID},
+    "firstName": "${patient.firstName}",
+    "lastName": "${patient.lastName}",
+    "dateOfBirth": "${patient.dateOfBirth}",
+    "gender": "${patient.gender}",
+    "contactNumber": "${patient.contactNumber}",
+    "address": "${patient.address}",
+    "medicalHistory": "${patient.medicalHistory}",
+    "currentMedications": "${patient.currentMedications}",
+    "allergies": "${patient.allergies}",
+    "createdAt": "${patient.createdAt}",
+    "modifiedAt": "${patient.modifiedAt}",
+    "isActive": "${patient.isActive}"
+    }`
+    return obj;
+  }
+
+  createRow(result: any): void {
+    // patient creation dialog
+    console.log(result);
+
+    result.dateOfBirth = this.formatToSqlTimestamp(result.dateOfBirth, 'dateOnly');
+    result.createdAt = this.formatToSqlTimestamp(result.createdAt, 'dateTime');
+    result.modifiedAt = this.formatToSqlTimestamp(result.modifiedAt, 'dateTime');
+
+    // convert allergies array to comma separated string
+    result.allergies = result.allergies.toString();
+
+    // cast result to PatientCreate
+    const payload: PatientCreate = result;
+
+    // console.log(result.toString())
+    // console.log(this.toString(payload))
+    // console.log('Final Patient Create Payload:- ', payload);
+
+    const headers = {
+      'Authorization': `Bearer ${this.loginService.getToken()}`,
+      'Content-Type': 'application/json'
+    };
+
+    // post request
+    const response = this.http.post(`${this.baseUrl}`, this.toString(payload), { headers });
+
+    // handle response
+    response.subscribe({
+      next: (res) => {
+        Swal.fire('Success', 'Patient created successfully!', 'success');
+      },
+      error: (err) => {
+        Swal.fire('Error', 'Patient creation failed!', 'error');
+      },
+      complete: () => {
+        this.loadPatients();
+      }
+    })
   }
 
   logout() {
@@ -402,5 +409,26 @@ export class PatientTable implements AfterViewInit, OnDestroy {
       method: 'POST'
     })
     this.router.navigate(['/login']);
+  }
+
+  formatToSqlTimestamp(dateInput: string, type: string): string {
+    const dt = new Date(dateInput);
+
+    const pad = (num: number, size = 2) =>
+      num.toString().padStart(size, '0');
+
+    const year   = dt.getFullYear();
+    const month  = pad(dt.getMonth() + 1);
+    const day    = pad(dt.getDate());
+    const hours  = pad(dt.getHours());
+    const mins   = pad(dt.getMinutes());
+    const secs   = pad(dt.getSeconds());
+    const millis = pad(dt.getMilliseconds(), 3);
+
+    if (type == 'dateOnly') {
+      return `${year}-${month}-${day}`;
+    } else {
+      return `${year}-${month}-${day} ${hours}:${mins}:${secs}.${millis}`;
+    }
   }
 }

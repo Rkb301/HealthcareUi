@@ -9,7 +9,7 @@
         placeholder="Name"
         formControlName="signUpName"
       />
-      <div class="error" *ngIf="signUpForm.get('signUpName')?.invalid && signUpForm.get('signUpName')?.touched">
+      <div class="error" *ngIf="signUpForm.get('signUpName')?.hasError('required') && signUpForm.get('signUpName')?.touched">
         Name is required.
       </div>
       <div class="error"

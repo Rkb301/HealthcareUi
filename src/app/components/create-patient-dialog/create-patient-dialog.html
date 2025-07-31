@@ -1,0 +1,191 @@
+<div class="patient-dialog">
+  <h2 mat-dialog-title>Create Patient</h2>
+
+  <form [formGroup]="createPatientForm" mat-dialog-content>
+    <!-- First Name Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>First Name</mat-label>
+      <input
+        matInput
+        formControlName="firstName"
+        type="text"
+      />
+
+      <mat-error *ngIf="createPatientForm.get('firstName')?.hasError('required') && createPatientForm.get('firstName')?.touched">
+        First Name is required
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('firstName')?.hasError('maxlength')">
+        Cannot exceed 50 characters
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('firstName')?.hasError('minlength')">
+        First Name has to be at least 2 characters
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('firstName')?.invalid && (createPatientForm.get('firstName')?.dirty || createPatientForm.get('firstName')?.touched)">
+        Enter a valid First Name
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Last Name Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Last Name</mat-label>
+      <input
+        matInput
+        formControlName="lastName"
+        type="text"
+      />
+
+      <mat-error *ngIf="createPatientForm.get('lastName')?.hasError('required') && createPatientForm.get('lastName')?.touched">
+        Last Name is required
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('lastName')?.hasError('maxlength')">
+        Cannot exceed 50 characters
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('lastName')?.hasError('minlength')">
+        Last Name has to be at least 2 characters
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('lastName')?.invalid && (createPatientForm.get('lastName')?.dirty || createPatientForm.get('lastName')?.touched)">
+        Enter a valid Last Name
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Date Of Birth Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Date Of Birth</mat-label>
+      <input
+        matInput
+
+        [matDatepicker]="dp"
+        formControlName="dateOfBirth"
+        [min]="minDate"
+        [max]="maxDate"
+      />
+
+      <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+      <mat-datepicker #dp></mat-datepicker>
+      <mat-error *ngIf="createPatientForm.get('dateOfBirth')?.hasError('required')">
+        Date Of Birth is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Gender Field -->
+     <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Gender</mat-label>
+      <mat-select
+        formControlName="gender"
+        [(value)]="genderSelected"
+        placeholder="Gender"
+        class="gender-select"
+      >
+        <mat-option value="" disabled>Choose Gender...</mat-option>
+        <mat-option *ngFor="let gender of genderOptions" id="genderOption" [value]="gender.gender">
+          {{gender.gender}}
+        </mat-option>
+      </mat-select>
+
+      <mat-error *ngIf="createPatientForm.get('gender')?.hasError('required')">
+        Gender is required
+      </mat-error>
+     </mat-form-field>
+
+     <!-- Contact Number Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Contact Number</mat-label>
+      <input
+        matInput
+        formControlName="contactNumber"
+        type="number"
+      />
+
+      <mat-error *ngIf="createPatientForm.get('contactNumber')?.hasError('required') && createPatientForm.get('contactNumber')?.touched">
+        Contact Number is required
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('contactNumber')?.hasError('maxlength')">
+        Cannot exceed 10 digits
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('contactNumber')?.hasError('minlength')">
+        Contact Number has to be at least 8 digits
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('contactNumber')?.invalid && (createPatientForm.get('contactNumber')?.dirty || createPatientForm.get('contactNumber')?.touched)">
+        Enter a valid Contact Number
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Address Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Address</mat-label>
+      <textarea
+        matInput
+        formControlName="address"
+        rows="5"
+        minlength="3"
+        maxlength="255"
+      ></textarea>
+
+      <mat-error *ngIf="createPatientForm.get('address')?.hasError('required')">
+        Address is required
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('address')?.hasError('maxlength')">
+        Cannot exceed 255 characters
+      </mat-error>
+      <mat-error *ngIf="createPatientForm.get('address')?.hasError('minlength')">
+        Address has to be at least 3 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Medical History Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Medical History</mat-label>
+      <textarea
+        matInput
+        formControlName="medicalHistory"
+        rows="3"
+        maxlength="255"
+      ></textarea>
+
+      <mat-error *ngIf="createPatientForm.get('medicalHistory')?.hasError('maxlength')">
+        Cannot exceed 255 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Current Medications Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Current Medications</mat-label>
+      <textarea
+        matInput
+        formControlName="currentMedications"
+        rows="3"
+        maxlength="255"
+      ></textarea>
+
+      <mat-error *ngIf="createPatientForm.get('currentMedications')?.hasError('maxlength')">
+        Cannot exceed 255 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Allergies Field -->
+    <section formArrayName="allergies" class="allergy-section">
+      <mat-label class="section-title">Allergies</mat-label>
+
+      <!-- Checkbox List of Allergies -->
+      <div *ngFor="let option of allergyOptions; let i = index" class="allergy-item">
+        <mat-checkbox
+          [checked]="allergiesArray.value.includes(option)"
+          (change)="onAllergyChange(option, $event)"
+        >
+          {{ option }}
+        </mat-checkbox>
+      </div>
+
+      <mat-error *ngIf="allergiesArray.invalid && (allergiesArray.dirty || allergiesArray.touched)">
+        Please select at least one allergy or choose “Other.”
+      </mat-error>
+    </section>
+  </form>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button (click)="onSave()" [disabled]="createPatientForm.invalid" style="color: black;">
+      Save
+    </button>
+  </mat-dialog-actions>
+</div>

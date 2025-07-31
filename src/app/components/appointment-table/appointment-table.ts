@@ -1,23 +1,17 @@
-import { Component, AfterViewInit, ViewChild, inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import Swal from 'sweetalert2';
-import { AppointmentWithNamesDTO, Appointment } from '../../models/appointment.model';
 import { MatIconModule } from '@angular/material/icon';
-import { merge, of, combineLatest, Subject } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { LoginService } from '../../services/login.service';
-import { BookAppointmentDialog } from '../book-appointment-dialog/book-appointment-dialog';
-import { MatDialog } from '@angular/material/dialog';
-import { TableShell } from "../table-shell/table-shell";
+import { TableShell } from '../table-shell/table-shell';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-appointment-table',
@@ -29,305 +23,151 @@ import { TableShell } from "../table-shell/table-shell";
     MatButtonModule,
     MatTableModule,
     MatPaginatorModule,
-    MatSortModule,
     MatProgressSpinnerModule,
-    ReactiveFormsModule,
     MatIconModule,
+    ReactiveFormsModule,
     TableShell
   ],
   templateUrl: './appointment-table.html',
   styleUrls: ['./appointment-table.scss']
 })
-export class AppointmentTable implements AfterViewInit, OnDestroy {
+export class AppointmentTable implements OnInit {
   private http = inject(HttpClient);
-  private destroy$ = new Subject<void>();
   private loginService = inject(LoginService);
-  private dialog = inject(MatDialog);
 
-  displayedColumns = ['patientName','doctorName','appointmentDate','reason','status','notes','actions'];
-  data: AppointmentWithNamesDTO[] = [];
-  resultsLength = 0;
-  isLoading = true;
-  isRateLimitReached = false;
+  // Simple properties
+  displayedColumns = ['patientName', 'doctorName', 'appointmentDate', 'reason', 'status', 'actions'];
+  dataSource = new MatTableDataSource<any>([]);
   searchControl = new FormControl('');
+  isLoading = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
 
   private baseUrl = 'http://localhost:5122/api/appointment';
   private headers = { 'Authorization': `Bearer ${this.loginService.getToken()}` };
 
+  ngOnInit() {
+    this.loadData();
+    this.setupSearch();
+  }
+
   ngAfterViewInit() {
-    // Use setTimeout to ensure ViewChild elements are ready
-    setTimeout(() => {
-      this.initializeTable();
-    }, 0);
+    this.dataSource.paginator = this.paginator;
   }
 
-  private initializeTable() {
-    // Set default paginator values if not set
-    if (this.paginator) {
-      this.paginator.pageSize = this.paginator.pageSize || 10;
-      this.paginator.pageIndex = this.paginator.pageIndex || 0;
-    }
-
-    // Make initial HTTP call
-    this.loadAppointments();
-
-    // Setup reactive search and pagination
-    this.setupReactiveTable();
-  }
-
-  private loadAppointments() {
-    const pageNumber = this.paginator ? this.paginator.pageIndex + 1 : 1;
-    const pageSize = this.paginator ? this.paginator.pageSize : 10;
-
-    let params = new HttpParams()
-      .set('pageNumber', pageNumber.toString())
-      .set('pageSize', pageSize.toString());
-
-    this.http.get(`${this.baseUrl}`, { params, headers: this.headers }).subscribe({
-      next: (res: any) => {
+  // Simple data loading
+  loadData() {
+    this.isLoading = true;
+    this.http.get<any>(this.baseUrl, { headers: this.headers }).subscribe({
+      next: (response) => {
+        this.dataSource.data = response.data || [];
         this.isLoading = false;
-        this.data = res.data || [];
-        this.resultsLength = res.totalCount || 0;
       },
       error: (error) => {
         console.error('Error loading appointments:', error);
         this.isLoading = false;
-        this.isRateLimitReached = true;
       }
     });
   }
 
-  private setupReactiveTable() {
-    if (!this.paginator || !this.sort) {
-      console.error('Paginator or Sort not initialized');
-      return;
-    }
-
-    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
-
-    const search$ = this.searchControl.valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      distinctUntilChanged(),
-      map(q => q?.trim())
-    );
-
-    const pageSort$ = merge(this.sort.sortChange, this.paginator.page).pipe(startWith({}));
-
-    combineLatest([search$, pageSort$]).pipe(
-      switchMap(([q]) => {
-        this.isLoading = true;
-        let params = new HttpParams()
-          .set('pageNumber', (this.paginator.pageIndex + 1).toString())
-          .set('pageSize', this.paginator.pageSize.toString());
-
-        if (this.sort.active) {
-          params = params.set('sort', this.sort.active)
-            .set('order', this.sort.direction);
-        }
-
-        if (q) {
-          params = params.set('query', q);
-          return this.http.get(`${this.baseUrl}/search-lucene`, { params, headers: this.headers });
-        }
-        return this.http.get(`${this.baseUrl}`, { params, headers: this.headers });
-      }),
-      catchError((error) => {
-        console.error('HTTP Error:', error);
-        this.isRateLimitReached = true;
-        return of(null);
-      }),
-      map((res: any) => {
-        this.isLoading = false;
-        if (!res) return [];
-        this.resultsLength = res.totalCount || 0;
-        return res.data || [];
-      }),
-      takeUntil(this.destroy$)
-    ).subscribe((data: AppointmentWithNamesDTO[]) => this.data = data);
+  // Simple search
+  setupSearch() {
+    this.searchControl.valueChanges.subscribe(value => {
+      this.dataSource.filter = (value || '').trim().toLowerCase();
+    });
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  clearFilter() {
+  clearSearch() {
     this.searchControl.setValue('');
-    if (this.paginator) {
-      this.paginator.pageIndex = 0;
-    }
   }
 
-  createRow() {
-    const fields = [
-      { key: 'patientID', label: 'Patient ID', type: 'number' },
-      { key: 'doctorID', label: 'Doctor ID', type: 'number' },
-      { key: 'appointmentDate', label: 'Date', type: 'date' },
-      { key: 'reason', label: 'Reason', type: 'text' },
-      { key: 'status', label: 'Status', type: 'text' },
-      { key: 'notes', label: 'Notes', type: 'text' },
-    ];
-    const html = fields.map(f => `
-      <label>${f.label}</label>
-      <input id="${f.key}" class="swal2-input" type="${f.type}">
-    `).join('');
-
+  // Simple CRUD operations
+  createAppointment() {
     Swal.fire({
       title: 'New Appointment',
-      html,
+      html: `
+        <input id="patientID" class="swal2-input" placeholder="Patient ID" type="number">
+        <input id="doctorID" class="swal2-input" placeholder="Doctor ID" type="number">
+        <input id="appointmentDate" class="swal2-input" placeholder="Date" type="date">
+        <input id="reason" class="swal2-input" placeholder="Reason">
+        <input id="status" class="swal2-input" placeholder="Status" value="Scheduled">
+      `,
       showCancelButton: true,
       confirmButtonText: 'Create',
-      focusConfirm: false,
       preConfirm: () => {
-        const dto: any = {};
-        for (const f of fields) {
-          const el = (Swal.getPopup()!.querySelector(`#${f.key}`) as HTMLInputElement);
-          if (!el.value) {
-            Swal.showValidationMessage(`${f.label} is required`);
-            return;
-          }
-          dto[f.key] = f.type === 'number' ? +el.value : el.value;
+        const patientID = (document.getElementById('patientID') as HTMLInputElement).value;
+        const doctorID = (document.getElementById('doctorID') as HTMLInputElement).value;
+        const appointmentDate = (document.getElementById('appointmentDate') as HTMLInputElement).value;
+        const reason = (document.getElementById('reason') as HTMLInputElement).value;
+        const status = (document.getElementById('status') as HTMLInputElement).value;
+
+        if (!patientID || !doctorID || !appointmentDate || !reason) {
+          Swal.showValidationMessage('Please fill all required fields');
+          return false;
         }
-        return dto;
+
+        return { patientID: +patientID, doctorID: +doctorID, appointmentDate, reason, status };
       }
-    }).then(res => {
-      if (res.isConfirmed && res.value) {
-        this.http.post(this.baseUrl, res.value, { headers: this.headers }).subscribe({
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.http.post(this.baseUrl, result.value, { headers: this.headers }).subscribe({
           next: () => {
-            Swal.fire('Created','Appointment added','success');
-            this.loadAppointments();
+            Swal.fire('Success', 'Appointment created', 'success');
+            this.loadData();
           },
-          error: () => Swal.fire('Error','Creation failed','error')
+          error: () => Swal.fire('Error', 'Failed to create appointment', 'error')
         });
       }
     });
   }
 
-  editRow(row: AppointmentWithNamesDTO) {
-    const fields = [
-      { key: 'appointmentDate', label: 'Date', type: 'date', value: row.appointmentDate },
-      { key: 'reason', label: 'Reason', type: 'text', value: row.reason },
-      { key: 'status', label: 'Status', type: 'text', value: row.status },
-      { key: 'notes', label: 'Notes', type: 'text', value: row.notes }
-    ];
-    const html = fields.map(f => `
-      <label>${f.label}</label>
-      <input id="${f.key}" class="swal2-input" type="${f.type}" value="${f.value}">
-    `).join('');
-
+  editAppointment(row: any) {
     Swal.fire({
       title: 'Edit Appointment',
-      html,
+      html: `
+        <input id="appointmentDate" class="swal2-input" value="${row.appointmentDate}">
+        <input id="reason" class="swal2-input" value="${row.reason}">
+        <input id="status" class="swal2-input" value="${row.status}">
+      `,
       showCancelButton: true,
       confirmButtonText: 'Save',
-      focusConfirm: false,
       preConfirm: () => {
-        const obj: any = {};
-        for (const f of fields) {
-          const el = (Swal.getPopup()!.querySelector(`#${f.key}`) as HTMLInputElement);
-          if (!el.value) {
-            Swal.showValidationMessage(`${f.label} is required`);
-            return;
-          }
-          obj[f.key] = el.value;
-        }
-        return obj;
+        const appointmentDate = (document.getElementById('appointmentDate') as HTMLInputElement).value;
+        const reason = (document.getElementById('reason') as HTMLInputElement).value;
+        const status = (document.getElementById('status') as HTMLInputElement).value;
+
+        return { appointmentDate, reason, status };
       }
-    }).then(res => {
-      if (res.isConfirmed && res.value) {
-        const ops = Object.keys(res.value).map(k => ({
-          op: 'replace', path: `/${k}`, value: res.value[k]
-        }));
-        this.http.patch(`${this.baseUrl}/${row.appointmentID}`, ops, {
-          headers: { 'Content-Type': 'application/json-patch+json', ...this.headers }
-        }).subscribe({
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.http.put(`${this.baseUrl}/${row.appointmentID}`, result.value, { headers: this.headers }).subscribe({
           next: () => {
-            Swal.fire('Saved','Appointment updated','success');
-            this.loadAppointments();
+            Swal.fire('Success', 'Appointment updated', 'success');
+            this.loadData();
           },
-          error: () => Swal.fire('Error','Update failed','error')
+          error: () => Swal.fire('Error', 'Failed to update appointment', 'error')
         });
       }
     });
   }
 
-  deleteRow(row: AppointmentWithNamesDTO) {
+  deleteAppointment(row: any) {
     Swal.fire({
-      title: 'Confirm Delete',
-      text: 'This will soft-delete the appointment.',
+      title: 'Delete Appointment',
+      text: 'Are you sure you want to delete this appointment?',
       icon: 'warning',
-      showCancelButton: true
-    }).then(r => {
-      if (r.isConfirmed) {
+      showCancelButton: true,
+      confirmButtonText: 'Delete'
+    }).then(result => {
+      if (result.isConfirmed) {
         this.http.delete(`${this.baseUrl}/${row.appointmentID}`, { headers: this.headers }).subscribe({
           next: () => {
-            Swal.fire('Deleted','Appointment removed','success');
-            this.loadAppointments();
+            Swal.fire('Deleted', 'Appointment deleted', 'success');
+            this.loadData();
           },
-          error: () => Swal.fire('Error','Deletion failed','error')
+          error: () => Swal.fire('Error', 'Failed to delete appointment', 'error')
         });
       }
-    });
-  }
-
-  openDialog(appointment?: AppointmentWithNamesDTO) {
-    // Get specializations for the dialog
-    this.http.get(`${this.baseUrl.replace('/appointment', '')}/doctor/specializations`, { headers: this.headers }).subscribe({
-      next: (response: any) => {
-        const specializations = response.data || [];
-
-        const ref = this.dialog.open(BookAppointmentDialog, {
-          width: '600px',
-          data: {
-            specialistOptions: specializations,
-            appointment: appointment,
-            isAdmin: true // Always admin context in this component
-          }
-        });
-
-        ref.afterClosed().subscribe(result => {
-          if (result) {
-            if (appointment) {
-              this.updateAppointment(appointment.appointmentID, result);
-            } else {
-              this.createAppointment(result);
-            }
-          }
-        });
-      },
-      error: (error) => {
-        console.error('Error loading specializations:', error);
-      }
-    });
-  }
-
-  createAppointment(data: any) {
-    this.http.post(this.baseUrl, data, { headers: this.headers }).subscribe({
-      next: () => {
-        Swal.fire('Created', 'Appointment added', 'success');
-        this.loadAppointments();
-      },
-      error: () => Swal.fire('Error', 'Creation failed', 'error')
-    });
-  }
-
-  updateAppointment(id: number, data: any) {
-    const ops = Object.keys(data).map(k => ({
-      op: 'replace', path: `/${k}`, value: data[k]
-    }));
-
-    this.http.patch(`${this.baseUrl}/${id}`, ops, {
-      headers: { 'Content-Type': 'application/json-patch+json', ...this.headers }
-    }).subscribe({
-      next: () => {
-        Swal.fire('Saved', 'Appointment updated', 'success');
-        this.loadAppointments();
-      },
-      error: () => Swal.fire('Error', 'Update failed', 'error')
     });
   }
 }

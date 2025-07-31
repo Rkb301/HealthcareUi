@@ -62,6 +62,14 @@ export class LoginService {
     return parseInt(this.adminID);
   }
 
+  getUsername(): string {
+    return this.username;
+  }
+
+  getUserEmail(): string {
+    return this.userEmail;
+  }
+
   isLoggedIn() {
     if (this.token == null) {
       return false;
