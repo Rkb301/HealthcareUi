@@ -28,3 +28,18 @@ export interface AppointmentCreationDTO {
   notes: string;
   isActive: string;
 }
+
+export interface AppointmentCreate {
+  appointmentID?: number;
+  patientID?: number;
+  doctorID?: number;
+  appointmentDate?: string;
+  reason?: string;
+  status?: string;
+  notes?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  modifiedAt?: string;
+
+  toString(appointment: AppointmentCreate): string;
+}

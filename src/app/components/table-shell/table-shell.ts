@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 
 @Component({
-  selector: 'app-table-shell',
+  selector: 'table-shell',
   standalone: true,
   imports: [
     CommonModule,

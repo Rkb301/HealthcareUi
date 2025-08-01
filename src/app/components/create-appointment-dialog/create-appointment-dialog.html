@@ -1,0 +1,157 @@
+<div class="appointment-dialog">
+  <h2 mat-dialog-title>Create Appointment</h2>
+
+  <form [formGroup]="createAppointmentForm" mat-dialog-content>
+
+    <!-- Patient Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Patient</mat-label>
+
+      <mat-select
+        formControlName="patientID"
+        [compareWith]="comparePatient"
+        placeholder="Choose Patient..."
+        class="patient-select"
+      >
+        <mat-option *ngFor="let patient of patients" [value]="patient.patientID" id="patientOption">
+          {{patientToString(patient)}}
+        </mat-option>
+      </mat-select>
+
+      <mat-error *ngIf="createAppointmentForm.get('patientID')?.hasError('required')">
+        Patient is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Doctor Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Doctor</mat-label>
+
+      <mat-select
+        formControlName="doctorID"
+        [compareWith]="compareDoctor"
+        placeholder="Choose Doctor..."
+        class="doctor-select"
+      >
+        <mat-option *ngFor="let doctor of doctors" [value]="doctor.doctorID" id="doctorOption">
+          {{doctorToString(doctor)}}
+        </mat-option>
+      </mat-select>
+
+      <mat-error *ngIf="createAppointmentForm.get('doctorID')?.hasError('required')">
+        Doctor is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Appointment Date Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Appointment Date</mat-label>
+
+      <input
+        matInput
+        [matDatepicker]="picker"
+        formControlName="appointmentDate"
+        placeholder="Select date and time"
+        [min]="minDate"
+        [max]="maxDate"
+      >
+
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+
+      <mat-error *ngIf="createAppointmentForm.get('appointmentDate')?.hasError('required')">
+        Appointment Date is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Appointment Time Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Time</mat-label>
+
+      <input
+        matInput
+        [matTimepicker]="tp"
+        formControlName="appointmentTime"
+        matTimepickerMin="8:00"
+        matTimepickerMax="18:00"
+      />
+
+      <mat-timepicker-toggle matSuffix [for]="tp"></mat-timepicker-toggle>
+      <mat-timepicker #tp></mat-timepicker>
+
+      <mat-error *ngIf="createAppointmentForm.get('appointmentTime')?.hasError('required')">
+        Time is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Reason Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Reason for Visit</mat-label>
+
+      <textarea
+        matInput
+        formControlName="reason"
+        placeholder="Enter reason for appointment"
+        rows="3"
+        maxlength="255"
+      ></textarea>
+
+      <mat-error *ngIf="createAppointmentForm.get('reason')?.hasError('required')">
+        Reason is required
+      </mat-error>
+      <mat-error *ngIf="createAppointmentForm.get('reason')?.hasError('minlength')">
+        Reason must be at least 5 characters
+      </mat-error>
+      <mat-error *ngIf="createAppointmentForm.get('reason')?.hasError('maxlength')">
+        Cannot exceed 255 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Status Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Status</mat-label>
+
+      <mat-select
+        formControlName="status"
+        class="status-select"
+      >
+        <mat-option *ngFor="let status of statusOptions" [value]="status" id="statusOption">
+          {{status}}
+        </mat-option>
+      </mat-select>
+
+      <mat-error *ngIf="createAppointmentForm.get('status')?.hasError('required')">
+        Status is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Notes Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notes (Optional)</mat-label>
+
+      <textarea
+        matInput
+        formControlName="notes"
+        placeholder="Additional notes..."
+        rows="3"
+        maxlength="500"
+      ></textarea>
+
+      <mat-error *ngIf="createAppointmentForm.get('notes')?.hasError('maxlength')">
+        Cannot exceed 500 characters
+      </mat-error>
+    </mat-form-field>
+  </form>
+
+  <!-- Manual Debugging -->
+  <!-- <div *ngIf="patients.length">Patients loaded: {{ patients | json }}</div>
+  <div *ngIf="doctors.length">Doctors loaded: {{ doctors | json }}</div>
+  <div>Form value: {{ createAppointmentForm.value | json }}</div> -->
+
+  <mat-dialog-actions>
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!createAppointmentForm.valid">
+      Save
+    </button>
+  </mat-dialog-actions>
+</div>

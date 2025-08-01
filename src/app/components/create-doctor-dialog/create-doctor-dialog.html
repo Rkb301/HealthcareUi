@@ -1,0 +1,148 @@
+<div class="doctor-dialog">
+  <h2 mat-dialog-title>Create Doctor</h2>
+
+  <form [formGroup]="createDoctorForm" mat-dialog-content>
+    <!-- First Name Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>First Name</mat-label>
+
+      <input
+        matInput
+        formControlName="firstName"
+        type="text"
+      >
+
+      <mat-error *ngIf="createDoctorForm.get('firstName')?.hasError('required')">
+        First Name is required
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('firstName')?.hasError('maxlength')">
+        Cannot exceed 50 characters
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('firstName')?.hasError('minlength')">
+        First Name has to be at least 2 characters
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('firstName')?.hasError('pattern')">
+        Enter a valid First Name
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Last Name Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Last Name</mat-label>
+
+      <input
+        matInput
+        formControlName="lastName"
+        type="text"
+      >
+
+      <mat-error *ngIf="createDoctorForm.get('lastName')?.hasError('required')">
+        Last Name is required
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('lastName')?.hasError('maxlength')">
+        Cannot exceed 50 characters
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('lastName')?.hasError('minlength')">
+        Last Name has to be at least 2 characters
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('lastName')?.invalid && (createDoctorForm.get('lastName')?.dirty || createDoctorForm.get('lastName')?.touched)">
+        Enter a valid Last Name
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Specialization Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Specialization</mat-label>
+
+      <mat-select
+        formControlName="specialization"
+        placeholder="Choose Specialization..."
+        class="specialization-select"
+      >
+        <mat-option value="" disabled>Select Specialization...</mat-option>
+        <mat-option *ngFor="let spec of specializationOptions" [value]="spec" id="specializationOption">
+          {{spec}}
+        </mat-option>
+      </mat-select>
+
+      <mat-error *ngIf="createDoctorForm.get('specialization')?.hasError('required')">
+        Specialization is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Contact Number Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Contact Number</mat-label>
+      <input
+        matInput
+        formControlName="contactNumber"
+        type="number"
+      />
+
+      <mat-error *ngIf="createDoctorForm.get('contactNumber')?.hasError('required') && createDoctorForm.get('contactNumber')?.touched">
+        Contact Number is required
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('contactNumber')?.hasError('maxlength')">
+        Cannot exceed 10 digits
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('contactNumber')?.hasError('minlength')">
+        Contact Number has to be at least 8 digits
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('contactNumber')?.invalid && (createDoctorForm.get('contactNumber')?.dirty || createDoctorForm.get('contactNumber')?.touched)">
+        Enter a valid Contact Number
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Email Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+
+      <input
+        matInput
+        formControlName="email"
+        placeholder="Enter email address"
+        type="email"
+      >
+
+      <mat-error *ngIf="createDoctorForm.get('email')?.hasError('required')">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('email')?.hasError('email')">
+        Enter a valid email address
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('email')?.hasError('maxlength')">
+        Cannot exceed 100 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Schedule Field -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Schedule</mat-label>
+
+      <mat-select
+        formControlName="schedule"
+        placeholder="Choose Schedule..."
+        class="schedule-select"
+      >
+        <mat-option *ngFor="let sched of scheduleOptions" [value]="sched" id="scheduleOption">
+          {{sched}}
+        </mat-option>
+      </mat-select>
+
+      <mat-error *ngIf="createDoctorForm.get('schedule')?.hasError('required')">
+        Schedule is required
+      </mat-error>
+      <mat-error *ngIf="createDoctorForm.get('schedule')?.hasError('maxlength')">
+        Cannot exceed 255 characters
+      </mat-error>
+    </mat-form-field>
+
+  </form>
+
+  <mat-dialog-actions>
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!createDoctorForm.valid">
+      Save
+    </button>
+  </mat-dialog-actions>
+</div>
