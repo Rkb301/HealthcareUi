@@ -1,146 +1,52 @@
-# HealthcareUi
+# Healthcare Management UI — Angular
 
-A modern, responsive healthcare management web application built with Angular. This project offers an intuitive interface for managing patients, appointments, and healthcare data, focusing on scalability, maintainability, and ease of use.
+Angular frontend for a healthcare-management application, developed as part of a software engineering internship project. It demonstrates component-driven frontend development, forms, routing, HTTP integration, and workflows around patients, doctors, and appointments.
 
----
+## Technology
 
-## Table of Contents
+- Angular 20, TypeScript, RxJS
+- Angular Material and CDK
+- HTTP requests to an ASP.NET Core backend
+- Tabulator tables, SweetAlert2, and Luxon
 
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Scripts & Commands](#scripts--commands)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [Resources](#resources)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+## Related backend
 
----
+See [HealthcareApi](https://github.com/Rkb301/HealthcareApi) for the ASP.NET Core API, database models, authorization and Lucene.NET search implementation. The frontend is not a standalone application: many features require the API, its configured database and appropriate test accounts.
 
-## Features
+## Run locally
 
-- Responsive Angular UI for healthcare management
-- Manage patients, appointments, and healthcare data
-- Modular codebase for easy extension
-- Environment-based configuration
-- Built-in support for unit and e2e testing
+1. Install a Node.js version compatible with Angular 20 (Node.js 20.19+, 22.12+ or 24+).
+2. Run `npm ci` in this repository.
+3. Configure the [HealthcareApi](https://github.com/Rkb301/HealthcareApi) project with local SQL Server and development credentials; apply its migrations, and start it.
+4. The frontend currently uses **http://localhost:5122** for API calls in several components. The API must serve that origin, or you must update the frontend API base URLs to match your local server.
+5. Start the frontend with `npm start` (or `npx ng serve`) and open **http://localhost:4200**.
 
----
-
-## Quick Start
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- [Angular CLI](https://angular.io/cli) (install with: `npm install -g @angular/cli`)
-
-### Installation
+## Useful commands
 
 ```bash
-git clone https://github.com/Rkb301/HealthcareUi.git
-cd HealthcareUi
-npm install
+npm ci
+npm start
+npm run build
+npm test
 ```
 
-### Running the Development Server
+`npm run build` builds the production configuration. Angular may report optimization and stylesheet budget warnings; the threshold is configured in `angular.json` and should be reviewed after future dependency or feature changes.
 
-```bash
-ng serve
-```
+## Source layout
 
-Visit [http://localhost:4200/](http://localhost:4200/) in your browser. The app reloads automatically on source changes.
+| Path | What it contains |
+| --- | --- |
+| `src/app/components/` | Healthcare-management views and dialogs |
+| `src/app/` | Angular application setup, services, and models |
+| `src/styles.scss` | Global styling |
+| `angular.json` | CLI builds, assets and optimization limits |
 
----
+## Limitations and security
 
-## Project Structure
+- **Portfolio/demo code only**: not validated or certified for clinical deployment.
+- Use synthetic patient and appointment records when running locally.
+- The application uses development-local backend endpoints. Production use requires environment configuration, authentication hardening and CORS review.
+- No independent e2e test harness is currently included in the package scripts. Unit-test files exist, but their pass status should be verified for each change.
+- Avoid publishing credentials, real personal health information, production screenshots, or database dumps.
 
-```
-HealthcareUi/
-├── src/
-│   ├── app/               # Main application source (components, services, modules)
-│   │   ├── components/    # Standalone UI components
-│   │   ├── models/        # Models mapping responses
-│   │   └── services/      # Business logic for handling auth, login, etc.
-│   ├── images/            # Images for use within app
-│   ├── _theme-colors.scss # Custom theme options toggleable within the file
-├── angular.json
-├── package.json
-└── README.md
-```
-
----
-
-## Scripts & Commands
-
-- **Start Dev Server:** `ng serve`
-- **Build for Production:** `ng build`
-- **Generate Component:** `ng generate component <name>`
-- **List Schematics:** `ng generate --help`
-
----
-
-## Testing
-
-### Unit Tests
-
-Run unit tests with [Karma](https://karma-runner.github.io/):
-
-```bash
-ng test
-```
-
-### End-to-End (E2E) Tests
-
-To run e2e tests (ensure the framework is set up):
-
-```bash
-ng e2e
-```
-
----
-
-## Deployment
-
-After building for production (`ng build`), deploy the contents of the `dist/` directory to your web server or cloud provider.
-
----
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and open a pull request.
-
-1. Fork the repo
-2. Create your feature branch:
-  ```bash
-  git checkout -b feature/YourFeature
-  ```
-3. Commit your changes:
-  ```bash
-  git commit -am 'Add new feature'
-  ```
-4. Push to the branch:
-  ```bash
-  git push origin feature/YourFeature
-  ```
-5. Open a Pull Request
-
----
-
-## Resources
-
-- [Angular Documentation](https://angular.io/docs)
-- [Angular CLI Reference](https://angular.io/cli)
-
----
-
-## License
-
-This project is licensed under the MIT License.
-
----
-
-## Acknowledgements
-
-Generated with [Angular CLI](https://angular.io/cli) version 20.0.1.
+**Portfolio focus:** Angular · TypeScript · frontend architecture · full-stack integration · healthcare workflow UI
